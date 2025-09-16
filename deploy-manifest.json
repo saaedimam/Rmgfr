@@ -1,0 +1,34 @@
+{
+  "name": "antifraud-platform",
+  "version": "1.0.0",
+  "description": "Anti-Fraud Platform - Comprehensive fraud detection and prevention",
+  "type": "fullstack",
+  "components": {
+    "web": {
+      "type": "nextjs",
+      "build_dir": "web/.next",
+      "start_command": "cd web && pnpm start",
+      "port": 3000
+    },
+    "api": {
+      "type": "fastapi",
+      "build_dir": "platform/api",
+      "start_command": "cd platform/api && python -m uvicorn src.main:app --host 0.0.0.0 --port 8000",
+      "port": 8000
+    },
+    "mobile": {
+      "type": "expo",
+      "build_dir": "platform/mobile/dist",
+      "start_command": "cd platform/mobile && pnpm start",
+      "port": 19006
+    }
+  },
+  "database": {
+    "type": "postgresql",
+    "migrations": "platform/infra/db"
+  },
+  "monitoring": {
+    "sentry": true,
+    "health_checks": ["/health", "/api/health"]
+  }
+}
