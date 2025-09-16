@@ -1,17 +1,31 @@
 # Node/Expo
-node_modules
-.next
-.expo
-dist
+node_modules/
+.next/
+dist/
+build/
+.turbo/
+.expo/
+.expo-shared/
 # Python
 __pycache__/
 .env
 .venv
 # OS / misc
 .DS_Store
+.env
+.env.*
+coverage/
+.pytest_cache/
+**/__pycache__/
+.venv/
 # IDE
-.vscode/
 .idea/
+.vscode/
+*.log
+*.sqlite
+.vercel/
+.expo/*
+!.expo/.keep
 # Logs
 *.log
 # Runtime data

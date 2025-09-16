@@ -1,0 +1,27 @@
+name: repo-size-guard
+on:
+  pull_request:
+    branches: [ "**" ]
+  push:
+    branches: [ main ]
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout (full history)
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        lfs: true
+    - name: Guard big files in working tree
+      run: |
+        bash platform/scripts/guard-big-files.sh
+    - name: Detect large blobs in history (>50MB)
+      run: |
+        set -euo pipefail
+        mapfile -t big < <(git rev-list --objects --all | git cat-file --batch-check='%(objecttype) %(objectname) %(objectsize) %(rest)' | awk '$1=="blob" && $3>52428800 {print $2 " " $3 " " $4}')
+        if [ "${#big[@]}" -gt 0 ]; then
+          echo "Found oversized blobs in history (consider git lfs migrate / filter-repo):"
+          printf "%s\n" "${big[@]}"
+          exit 1
+        fi

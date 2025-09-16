@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+scripts/guard-big-files.sh
+
+# block accidental node_modules or build artifacts
+
+if git diff --cached --name-only | grep -E "^(?:.*node_modules/|.*dist/|.*.next/|.*build/)" >/dev/null; then
+echo "ERROR: Attempt to commit build artifacts or node_modules. Update .gitignore if needed." >&2
+exit 1
+fi

@@ -7,6 +7,9 @@ const config: ExpoConfig = {
   scheme: 'sigmaiori',
   ios: { bundleIdentifier: 'com.yourco.sigmaiori' },
   android: { package: 'com.yourco.sigmaiori' },
+  plugins: [
+    'expo-font'
+  ],
   extra: {
     mobileProxyBase: process.env.MOBILE_PROXY_BASE ?? 'http://localhost:3000',
     releaseChannel: channel,
