@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, ValidationError, constr
 import sentry_sdk
 from typing import Optional, List
+from api.admin import router as admin_router
 
 sentry_sdk.init(dsn=os.getenv("SENTRY_DSN_API"))
 
@@ -174,3 +175,6 @@ async def list_cases(request: Request, status: Optional[str] = None, page: int =
         params.extend([page_size, (page - 1) * page_size])
         rows = await conn.fetch(q, *params)
         return [dict(r) for r in rows]
+
+# --- mount admin router ---
+app.include_router(admin_router)
