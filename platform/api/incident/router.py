@@ -2,6 +2,7 @@ import os, json, asyncpg, time
 from fastapi import APIRouter, Request, HTTPException
 from pydantic import BaseModel
 from ..main import get_pool, resolve_project_id
+from ..audit.router import ingest
 
 router_inc = APIRouter(prefix="/v1/incident", tags=["incident"])
 
@@ -32,6 +33,11 @@ async def open_incident(request: Request, body: IncidentOpenIn):
         row = await conn.fetchrow("""insert into incidents(project_id,severity,title,commander,summary)
                                      values($1,$2,$3,$4,$5) returning id, started_at""",
                                      project_id, body.severity, body.title, body.commander, body.summary)
+        # Emit audit event
+        await ingest(request, type("Obj",(object,),{
+          "source":"incident","kind":"opened","subject":str(row["id"]),"actor":body.commander or "system",
+          "payload":{"severity":body.severity,"title":body.title}
+        })())
         return {"id": str(row["id"]), "started_at": row["started_at"]}
 
 @router_inc.post("/event")

@@ -13,6 +13,7 @@ export default function Nav() {
         <Link href="/dashboard/flags">Flags</Link>
         <Link href="/dashboard/incidents">Incidents</Link>
         <Link href="/dashboard/slo">SLO</Link>
+        <Link href="/dashboard/audit">Audit</Link>
       </nav>
       <UserButton afterSignOutUrl="/sign-in" />
     </header>

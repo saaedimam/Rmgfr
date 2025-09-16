@@ -1,110 +1,64 @@
 """
-Anti-Fraud Platform API
-FastAPI application with async PostgreSQL and Redis support
+Main FastAPI application for Anti-Fraud Platform
 """
 
-import asyncio
+import os
 import logging
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
+from typing import Dict, Any
 
-import sentry_sdk
-from fastapi import FastAPI, HTTPException
+import uvicorn
+from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from pydantic import BaseModel
-from pydantic_settings import BaseSettings
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
+import sentry_sdk
+from sentry_sdk.integrations.fastapi import FastApiIntegration
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
-from .routers import health, items
-from .services.database import DatabaseService
-from .services.redis import RedisService
+# Import routers
+from .routers import events, decisions, cases, health
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-class Settings(BaseSettings):
-    """Application settings"""
-    
-    # Database
-    supabase_url: str = "https://your-project.supabase.co"
-    supabase_anon_key: str = "your-anon-key"
-    supabase_db_url: str = "postgresql://postgres:password@db.your-project.supabase.co:5432/postgres"
-    
-    # Redis
-    redis_url: str = "redis://localhost:6379"
-    
-    # Security
-    jwt_secret: str = "your-jwt-secret-min-32-chars"
-    encryption_key: str = "your-encryption-key-32-chars"
-    
-    # Rate Limiting
-    rate_limit_per_minute: int = 60
-    rate_limit_burst: int = 100
-    
-    # Sentry
-    sentry_dsn: str = ""
-    
-    class Config:
-        env_file = ".env"
-
-
-settings = Settings()
-
-# Initialize Sentry
-if settings.sentry_dsn:
+# Sentry configuration
+if os.getenv("SENTRY_DSN_API"):
     sentry_sdk.init(
-        dsn=settings.sentry_dsn,
+        dsn=os.getenv("SENTRY_DSN_API"),
+        integrations=[
+            FastApiIntegration(auto_enabling_instrumentations=True),
+            SqlalchemyIntegration(),
+        ],
         traces_sample_rate=0.1,
         profiles_sample_rate=0.1,
     )
 
-# Global services
-db_service: DatabaseService | None = None
-redis_service: RedisService | None = None
-
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+async def lifespan(app: FastAPI):
     """Application lifespan manager"""
-    global db_service, redis_service
-    
-    # Startup
-    logging.info("Starting Anti-Fraud Platform API...")
-    
-    # Initialize database
-    db_service = DatabaseService(settings.supabase_db_url)
-    await db_service.connect()
-    
-    # Initialize Redis
-    redis_service = RedisService(settings.redis_url)
-    await redis_service.connect()
-    
-    logging.info("API startup complete")
-    
+    logger.info("Starting Anti-Fraud Platform API")
     yield
-    
-    # Shutdown
-    logging.info("Shutting down API...")
-    
-    if db_service:
-        await db_service.disconnect()
-    
-    if redis_service:
-        await redis_service.disconnect()
-    
-    logging.info("API shutdown complete")
+    logger.info("Shutting down Anti-Fraud Platform API")
 
 
 # Create FastAPI app
 app = FastAPI(
     title="Anti-Fraud Platform API",
-    description="Real-time fraud detection and prevention API",
-    version="0.1.0",
+    description="High-performance fraud detection and prevention API",
+    version="1.0.0",
     lifespan=lifespan,
+    docs_url="/docs",
+    redoc_url="/redoc",
 )
 
 # Add middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://your-web.vercel.app"],
+    allow_origins=["http://localhost:3000", "https://*.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -112,42 +66,66 @@ app.add_middleware(
 
 app.add_middleware(
     TrustedHostMiddleware,
-    allowed_hosts=["localhost", "*.vercel.app", "*.vercel.com"]
+    allowed_hosts=["localhost", "*.vercel.app", "*.supabase.co"]
 )
 
 # Include routers
-app.include_router(health.router, prefix="/health", tags=["health"])
-app.include_router(items.router, prefix="/items", tags=["items"])
+app.include_router(health.router)
+app.include_router(events.router)
+app.include_router(decisions.router)
+app.include_router(cases.router)
+
+# Pydantic models
+class ErrorResponse(BaseModel):
+    error: str = Field(..., description="Error message")
+    detail: str = Field(..., description="Error details")
+    timestamp: str = Field(..., description="Error timestamp")
 
 
-@app.get("/")
+# Routes
+@app.get("/", response_model=Dict[str, str])
 async def root():
     """Root endpoint"""
     return {
         "message": "Anti-Fraud Platform API",
-        "version": "0.1.0",
-        "status": "operational"
+        "version": "1.0.0",
+        "docs": "/docs"
     }
 
 
-# Dependency to get database service
-async def get_db() -> DatabaseService:
-    """Get database service dependency"""
-    if not db_service:
-        raise HTTPException(status_code=503, detail="Database not available")
-    return db_service
+# Error handlers
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request, exc):
+    """Handle HTTP exceptions"""
+    import time
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=ErrorResponse(
+            error=exc.detail,
+            detail=f"HTTP {exc.status_code} error",
+            timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        ).dict()
+    )
 
 
-# Dependency to get Redis service
-async def get_redis() -> RedisService:
-    """Get Redis service dependency"""
-    if not redis_service:
-        raise HTTPException(status_code=503, detail="Redis not available")
-    return redis_service
+@app.exception_handler(Exception)
+async def general_exception_handler(request, exc):
+    """Handle general exceptions"""
+    import time
+    logger.error(f"Unhandled exception: {exc}")
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content=ErrorResponse(
+            error="Internal server error",
+            detail="An unexpected error occurred",
+            timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        ).dict()
+    )
 
 
 if __name__ == "__main__":
-    import uvicorn
+    import time
+    app.state.start_time = time.time()
     uvicorn.run(
         "src.main:app",
         host="0.0.0.0",
