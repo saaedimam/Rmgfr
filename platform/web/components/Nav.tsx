@@ -11,6 +11,8 @@ export default function Nav() {
         <Link href="/dashboard/decisions">Decisions</Link>
         <Link href="/dashboard/rules">Rules</Link>
         <Link href="/dashboard/flags">Flags</Link>
+        <Link href="/dashboard/incidents">Incidents</Link>
+        <Link href="/dashboard/slo">SLO</Link>
       </nav>
       <UserButton afterSignOutUrl="/sign-in" />
     </header>
