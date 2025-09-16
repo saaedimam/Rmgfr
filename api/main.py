@@ -5,6 +5,8 @@ from pydantic import BaseModel, Field, ValidationError, constr
 import sentry_sdk
 from typing import Optional, List
 from api.admin import router as admin_router
+from api.admin_rules import router_rules
+from api.rules.engine import evaluate_rules
 
 sentry_sdk.init(dsn=os.getenv("SENTRY_DSN_API"))
 
@@ -79,6 +81,34 @@ async def ratelimit_mw(request: Request, call_next):
 async def health():
     return {"status": "ok", "version": app.version}
 
+@app.get("/v1/events")
+async def list_events(request: Request, page: int = 1, page_size: int = 50):
+    api_key = request.headers.get("x-api-key")
+    if not api_key: raise HTTPException(401, "Missing X-API-Key")
+    if page_size > 200: raise HTTPException(400, "page_size too large")
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        project_id = await resolve_project_id(conn, api_key)
+        rows = await conn.fetch(
+            "select id, type, actor_user_id, ip, device_hash, event_ts from events where project_id=$1 order by event_ts desc limit $2 offset $3",
+            project_id, page_size, (page-1)*page_size
+        )
+        return [dict(r) for r in rows]
+
+@app.get("/v1/decisions")
+async def list_decisions(request: Request, page: int = 1, page_size: int = 50):
+    api_key = request.headers.get("x-api-key")
+    if not api_key: raise HTTPException(401, "Missing X-API-Key")
+    if page_size > 200: raise HTTPException(400, "page_size too large")
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        project_id = await resolve_project_id(conn, api_key)
+        rows = await conn.fetch(
+            "select id, event_id, outcome, score, reasons, decided_at from decisions where project_id=$1 order by decided_at desc limit $2 offset $3",
+            project_id, page_size, (page-1)*page_size
+        )
+        return [dict(r) for r in rows]
+
 # --- Endpoints ---
 @app.post("/v1/events")
 async def create_event(request: Request):
@@ -144,13 +174,22 @@ async def create_decision(request: Request):
         if not ev:
             raise HTTPException(404, "Event not found for project")
 
+        # auto-evaluate rules if score is not provided
+        outcome = body.outcome
+        score = body.score
+        reasons = body.reasons or []
+        if score is None:
+            rr = await evaluate_rules(conn, project_id, body.event_id)
+            # If client asked ALLOW but rules suggest stronger action, escalate to max(outcome, rr)
+            # Simple precedence: deny > review > allow
+            precedence = {"allow":0,"review":1,"deny":2}
+            if precedence[rr.outcome] > precedence[outcome]:
+                outcome = rr.outcome
+            score = rr.score
+            reasons = list(set(reasons + rr.reasons))
         row = await conn.fetchrow(
-            """
-            insert into decisions (project_id, event_id, outcome, score, reasons)
-            values ($1,$2,$3,$4,$5)
-            returning id, outcome, score, reasons, decided_at
-            """,
-            project_id, body.event_id, body.outcome, body.score, json.dumps(body.reasons or [])
+            "insert into decisions (project_id,event_id,outcome,score,reasons) values ($1,$2,$3,$4,$5) returning id,outcome,score,reasons,decided_at",
+            project_id, body.event_id, outcome, score, json.dumps(reasons)
         )
         return {"decision_id": str(row["id"]), "outcome": row["outcome"], "score": row["score"],
                 "reasons": row["reasons"], "decided_at": row["decided_at"].isoformat()}
@@ -178,3 +217,4 @@ async def list_cases(request: Request, status: Optional[str] = None, page: int =
 
 # --- mount admin router ---
 app.include_router(admin_router)
+app.include_router(router_rules)
