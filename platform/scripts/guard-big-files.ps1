@@ -1,15 +1,22 @@
+# PowerShell version of guard-big-files.sh
+# Fail on any file > 50MB (hard limit) or warn > 10MB (soft).
+
 $SOFT = 10MB
 $HARD = 50MB
 $status = 0
 
-git ls-files | ForEach-Object {
-    if (Test-Path -LiteralPath $_) {
-        $size = (Get-Item -LiteralPath $_).Length
+$files = git ls-files -z | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
+
+foreach ($file in $files) {
+    if (Test-Path $file) {
+        $size = (Get-Item $file).Length
         if ($size -ge $HARD) {
-            Write-Host "ERROR: $_ is $([math]::Round($size/1MB, 2)) MB (>50MB). Use Git LFS." -ForegroundColor Red
+            $sizeMB = [math]::Round($size / 1MB, 2)
+            Write-Error "ERROR: $file is $sizeMB MB (> 50MB). Use Git LFS."
             $status = 1
         } elseif ($size -ge $SOFT) {
-            Write-Host "WARN: $_ is $([math]::Round($size/1MB, 2)) MB (>10MB). Consider Git LFS." -ForegroundColor Yellow
+            $sizeMB = [math]::Round($size / 1MB, 2)
+            Write-Warning "WARN: $file is $sizeMB MB (> 10MB). Consider Git LFS."
         }
     }
 }
