@@ -1,0 +1,8 @@
+{
+  "expo": {
+    "name": "Sigma Iori",
+    "slug": "sigma-iori",
+    "scheme": "sigmaiori",
+    "platforms": ["ios","android","web"]
+  }
+}
