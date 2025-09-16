@@ -1,5 +1,3 @@
-import { SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 
 export default function HomePage() {
@@ -16,16 +14,16 @@ export default function HomePage() {
           </p>
           
           <div className="flex gap-4 justify-center mb-12">
-            <SignInButton mode="modal">
+            <Link href="/dashboard">
               <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
-                Sign In
+                Go to Dashboard
               </button>
-            </SignInButton>
-            <SignUpButton mode="modal">
+            </Link>
+            <Link href="/api/health">
               <button className="bg-white hover:bg-gray-50 text-blue-600 px-6 py-3 rounded-lg font-medium border border-blue-600 transition-colors">
-                Sign Up
+                Check API Health
               </button>
-            </SignUpButton>
+            </Link>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">

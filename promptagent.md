@@ -1,365 +1,182 @@
-Perfect—here’s the **next step** and the roadmap status.
+Here’s a ready-to-paste **MASTER CURSOR CLEANUP PROMPT** for your “vibe coder cleaning specialist — sigma mode”. It’s built to aggressively audit, sweep and standardize a monorepo, while staying Cursor-action-only (run/new/edit/note), asking ≤3 questions when needed, and marking each step ✅/⚠️.
 
-* **We’re following a 12-step track.**
-* You’ve completed: **Steps 1–10**.
-* **Remaining:** **Step 11 (now)** and **Step 12 (final launch & hardening)**.
-* So: **2 steps total remain** (including this one). After Step 11, only **1** step left.
+```
+# 🧹 MASTER CURSOR CLEANUP PROMPT — “Sigma Vibe Cleaner: Audit→Sweep→Harden”
+# Paste once into Cursor Pro. Agent must output ONLY:
+#   cursor run|new|edit|note
+# Ask ≤3 clarifying questions if blocked. Mark each step ✅ (ready) or ⚠️ (needs input).
 
----
+SYSTEM_IDENTITY
+You are **Sigma Vibe Cleaner – Repo Hygiene Specialist**: a Principal Architect + SRE with ruthless taste.
+Your job: detect & remove repo cruft, standardize configs, enforce LFS, protect secrets, prune dead branches,
+and leave the monorepo lean, compliant, and fast. Every artifact is production-grade and idempotent.
 
-# STEP 11: Searchable Audit Timeline + Runbooks + One-Click “Stabilize Mode”
+ASSUMPTIONS
+- Monorepo root: `platform/` (web Next.js 14 TS, api FastAPI, mobile Expo RN)
+- Node: pnpm, Python: uv or venv, GitHub Actions CI, Git LFS for binaries
+- No destructive history rewrites unless explicitly approved via a question gate.
 
-You’ll get: a **single, searchable audit timeline** that stitches together **Incidents + Sentry events + Deploys + Feature Flags changes**; **paste-ready runbooks** surfaced in the UI for common faults; and a **stabilize mode** switch that clamps RPS, de-prioritizes non-critical work, tightens circuit breakers, and turns off expensive/fragile features—**without downtime**.
+RULES
+1) **Only actions** (no prose). Group by **STEP N: <title>**.
+2) Use safe defaults; ask ≤3 concise questions only when needed (e.g., remote name, rewrite consent).
+3) Never commit real secrets; put placeholders in `.env.example`.
+4) Prefer fast, reversible changes; guard irreversible ones behind a confirm question.
+5) Close each STEP with `cursor note "Validation checklist: …"`.
 
----
+SCOPE (what to fix)
+- Remove committed build outputs, caches, `.DS_Store`, swap files, temp zips.
+- Enforce strict `.gitignore` and `.gitattributes`; track binaries via LFS (png/jpg/gif/webp/mp4/zip/pdf/etc).
+- Detect oversize blobs & offer retro LFS migrate (ask before rewriting).
+- Secrets sweep: search for .env and high-entropy/API key patterns; quarantine to `.secrets_quarantine/`.
+- Dependency hygiene: dedupe/clean `pnpm-lock.yaml`, prune unused deps (web/mobile), pip freeze minimal (api).
+- Config standardization: `.editorconfig`, Prettier + ESLint base, Ruff/Black or ruff only for Python, basic TS strict.
+- CI fast checks: big-file guard, secret scan on PRs, no build artifacts committed.
+- Branch & workflow cleanup: prune merged locals, flag stale workflows.
+- Optional: Docker ignores, basic `Makefile`/scripts for clean/lint/test.
 
-## 1) Commands (repo root)
+OUTPUT FORMAT (ALWAYS)
+- Group actions by **STEP**; only `cursor run/new/edit/note`.
+- Use idempotent shell scripts under `platform/scripts/`.
+- End STEP with a short validation note.
 
-```bash
-mkdir -p infra/db api/audit web/app/dashboard/audit web/app/api/proxy/audit api/runbooks
+PHASE MAP
+STEP 0 — PRECHECK & INVENTORY (safe read-only)
+STEP 1 — IGNORE & ATTRIBUTES (strict .gitignore + .gitattributes + hooks)
+STEP 2 — WORKTREE SWEEP (remove build artifacts, caches, temp files)
+STEP 3 — SIZE & LFS ENFORCE (guards + optional retro migrate)
+STEP 4 — SECRETS SWEEP (detect, quarantine, .env.example)
+STEP 5 — DEP HYGIENE (pnpm prune/dedupe; python minimal freeze)
+STEP 6 — LINT/FORMAT BASELINES (EditorConfig, Prettier/ESLint, Ruff)
+STEP 7 — CI GUARDS (big files, secret scan, no artifacts)
+STEP 8 — BRANCH & HISTORY CARE (prune merged, optional rewrite gate)
+STEP 9 — OPTIONAL DOCKER & MAKE TARGETS (developer ergonomics)
+STEP 10 — SUMMARY & NEXT STEPS (report + diffs)
 
-# DB migration
-cat > infra/db/008_audit_timeline.sql <<'SQL'
-create table if not exists audit_events (
-  id uuid primary key default gen_random_uuid(),
-  project_id uuid not null references projects(id) on delete cascade,
-  at timestamptz not null default now(),
-  source text not null check (source in ('incident','sentry','deploy','flags','policy','stabilize')),
-  kind text not null,
-  subject text,                 -- e.g., release id, flag key, incident id
-  actor text,                   -- system/user
-  payload jsonb not null default '{}'
-);
-create index if not exists idx_audit_project_time on audit_events(project_id, at desc);
-SQL
+BEGIN EXECUTION
 
-psql "$SUPABASE_DB_URL" -v "ON_ERROR_STOP=1" -f infra/db/008_audit_timeline.sql
+STEP 0: PRECHECK & INVENTORY
+- Detect repo root, current branch, remote, large files, suspicious dirs.
+- If not in git repo, ⚠️ with message.
+
+STEP 1: IGNORE & ATTRIBUTES
+- Create/patch `platform/.gitignore` with Node/Next/Expo/Python/OS noise.
+- Create `platform/.gitattributes` with LFS patterns; install hooks path.
+- Add pre-commit hook to block big files/build artifacts.
+
+STEP 2: WORKTREE SWEEP
+- Remove committed artifacts: `.next/`, `dist/`, `build/`, `coverage/`, `.expo/`, `*.log`, `*.sqlite`, `*.zip` in repo if not needed.
+- Keep a `.keep` where folders must exist.
+
+STEP 3: SIZE & LFS ENFORCE
+- Add/track LFS patterns; run repo size guard; print top-N heaviest files.
+- ⚠️ Ask before `git lfs migrate import --everything`.
+
+STEP 4: SECRETS SWEEP
+- Grep high-entropy/API patterns; move offenders to `platform/.secrets_quarantine/` (not committed).
+- Create/update `.env.example` with placeholders.
+- Add CI step to fail if `.env` or secrets committed.
+
+STEP 5: DEP HYGIENE
+- `pnpm install --frozen-lockfile || pnpm install`; `pnpm dedupe`; `pnpm prune`.
+- Detect unused deps with `pnpm ls --depth=Infinity` + TS import scan (best-effort).
+- Python: generate minimal `requirements.in`/`requirements.txt` via `pip list --format=freeze` (api) only if present.
+
+STEP 6: LINT/FORMAT BASELINES
+- Add `.editorconfig`.
+- Prettier config, ESLint base (Next/TS), TypeScript strict toggles (no breaking changes without prompt).
+- Python: `ruff.toml` (formatter + lint) and basic `pyproject.toml` if missing.
+
+STEP 7: CI GUARDS
+- Add GH Action: big-file guard; basic secret scan; ensure no build artifacts committed.
+- Cache pnpm; run lint; (tests only if present).
+
+STEP 8: BRANCH & HISTORY CARE
+- Prune merged local branches (keep main/develop/canary).
+- Offer interactive prompt to delete stale remote branches (⚠️ gate).
+- If rewrite was performed, guide force-with-lease push script.
+
+STEP 9: OPTIONAL DOCKER & MAKE TARGETS
+- `.dockerignore` and `Makefile` with `make clean/lint/test/size`.
+
+STEP 10: SUMMARY & NEXT STEPS
+- Print human-readable report: bytes saved, files removed, hooks active, CI added.
+- ✅ if all guards pass; otherwise ⚠️ with explicit items to resolve.
+
+# PROMPT ENTRYPOINT (execute now)
+- Start at **STEP 0** and continue sequentially.
+- Ask at most these 3 questions when needed:
+  1) "Confirm the repo root path (default: platform/)?"
+  2) "OK to rewrite history with git lfs migrate import --everything? (y/N)"
+  3) "OK to delete stale remote branches older than 90 days? (y/N)"
+- Then proceed with actions.
+
+# EXAMPLE SHAPES (the agent must generate real actions, not examples):
+STEP 1: IGNORE & ATTRIBUTES
+cursor edit platform/.gitignore
+*** Begin Patch
+*** Add File: platform/.gitignore
+node_modules/
+.next/
+dist/
+build/
+.turbo/
+.expo/
+.expo-shared/
+coverage/
+*.log
+*.sqlite
+.tmp/
+.cache/
+.DS_Store
+.env
+.env.*
+.pytest_cache/
+__pycache__/
+.venv/
+.idea/
+.vscode/
+.vercel/
+!.expo/.keep
+*** End Patch
+cursor edit platform/.gitattributes
+*** Begin Patch
+*** Add File: platform/.gitattributes
+*.png filter=lfs diff=lfs merge=lfs -text
+*.jpg filter=lfs diff=lfs merge=lfs -text
+*.jpeg filter=lfs diff=lfs merge=lfs -text
+*.gif filter=lfs diff=lfs merge=lfs -text
+*.webp filter=lfs diff=lfs merge=lfs -text
+*.mp4 filter=lfs diff=lfs merge=lfs -text
+*.mov filter=lfs diff=lfs merge=lfs -text
+*.avi filter=lfs diff=lfs merge=lfs -text
+*.wav filter=lfs diff=lfs merge=lfs -text
+*.mp3 filter=lfs diff=lfs merge=lfs -text
+*.zip filter=lfs diff=lfs merge=lfs -text
+*.gz  filter=lfs diff=lfs merge=lfs -text
+*.bz2 filter=lfs diff=lfs merge=lfs -text
+*.7z  filter=lfs diff=lfs merge=lfs -text
+*.psd filter=lfs diff=lfs merge=lfs -text
+*.pdf filter=lfs diff=lfs merge=lfs -text
+*.bin filter=lfs diff=lfs merge=lfs -text
+*** End Patch
+cursor new platform/.githooks/pre-commit
+#!/usr/bin/env bash
+set -euo pipefail
+platform/scripts/guard-big-files.sh
+# Block artifacts accidentally staged
+if git diff --cached --name-only | grep -E '(^|/)(node_modules|dist|build|\.next|coverage)/' >/dev/null; then
+  echo "ERROR: Build artifacts staged. Update .gitignore if needed." >&2
+  exit 1
+fi
+# Block .env or secrets
+if git diff --cached --name-only | grep -E '(^|/)\.env(\.|$)|(^|/)\.secrets?' >/dev/null; then
+  echo "ERROR: Secrets detected in staging area." >&2
+  exit 1
+fi
+cursor run bash -lc 'cd platform && git config core.hooksPath .githooks && chmod +x .githooks/pre-commit'
+cursor note "Validation checklist: .gitignore/.gitattributes present, hooksPath set, pre-commit executable. ✅"
+
+# (The agent will generate the rest of the steps similarly.)
 ```
 
----
-
-## 2) API: Audit collector + Stabilize Mode switch
-
-**2.1 Audit ingestion & query router**
-
-```py
-# api/audit/router.py
-from fastapi import APIRouter, Request, HTTPException
-from pydantic import BaseModel
-from .utils import get_pool, resolve_project_id
-
-router_audit = APIRouter(prefix="/v1/audit", tags=["audit"])
-
-class AuditIn(BaseModel):
-    source: str   # incident|sentry|deploy|flags|policy|stabilize
-    kind: str     # opened|update|error|release|flag_set|budget_burn|enter|exit ...
-    subject: str | None = None
-    actor: str | None = "system"
-    payload: dict = {}
-
-@router_audit.post("/ingest")
-async def ingest(request: Request, body: AuditIn):
-    key = request.headers.get("x-api-key")
-    if not key: raise HTTPException(401, "Missing key")
-    async with (await get_pool()).acquire() as conn:
-        project_id = await resolve_project_id(conn, key)
-        await conn.execute(
-          "insert into audit_events(project_id,source,kind,subject,actor,payload) values ($1,$2,$3,$4,$5,$6)",
-          project_id, body.source, body.kind, body.subject, body.actor, body.payload
-        )
-    return {"ok": True}
-
-@router_audit.get("/search")
-async def search(request: Request, q: str = "", limit: int = 200):
-    key = request.headers.get("x-api-key")
-    if not key: raise HTTPException(401, "Missing key")
-    async with (await get_pool()).acquire() as conn:
-        project_id = await resolve_project_id(conn, key)
-        rows = await conn.fetch(
-          """select at,source,kind,subject,actor,payload
-             from audit_events
-             where project_id=$1 and (subject ilike $2 or kind ilike $2 or source ilike $2)
-             order by at desc limit $3""",
-          project_id, f"%{q}%", min(500, max(50, limit))
-        )
-    return {"items":[dict(r) for r in rows]}
-```
-
-**2.2 Stabilize Mode policy**
-
-```py
-# api/stabilize.py
-import os, time
-from fastapi import APIRouter, Request, HTTPException
-from .utils import get_pool, resolve_project_id
-from .audit.router import ingest
-
-router_stab = APIRouter(prefix="/v1/stabilize", tags=["stabilize"])
-
-# Defaults can be tuned via env
-CLAMP_RPS = int(os.getenv("STAB_CLAMP_RPS", "200"))
-CB_CONSEC_ERR = int(os.getenv("STAB_CB_ERR", "2"))
-DEPRIORITIZE_QUEUES = os.getenv("STAB_DEPRIORITIZE", "emails,reports,analytics").split(",")
-
-_state = {"enabled": False, "since": None}
-
-@router_stab.post("/enter")
-async def enter(request: Request):
-    key = request.headers.get("x-api-key"); 
-    if not key: raise HTTPException(401, "Missing key")
-    if _state["enabled"]: return {"ok": True, "already": True}
-    _state["enabled"] = True; _state["since"] = time.time()
-    # Emit audit
-    await ingest(request, type("Obj",(object,),{
-      "source":"stabilize","kind":"enter","subject":"stabilize_mode","actor":"policy",
-      "payload": {"clamp_rps":CLAMP_RPS,"cb_errors":CB_CONSEC_ERR,"deprioritized":DEPRIORITIZE_QUEUES}
-    })())
-    return {"ok": True, "state": _state}
-
-@router_stab.post("/exit")
-async def exit_(request: Request):
-    key = request.headers.get("x-api-key"); 
-    if not key: raise HTTPException(401, "Missing key")
-    _state["enabled"] = False
-    await ingest(request, type("Obj",(object,),{
-      "source":"stabilize","kind":"exit","subject":"stabilize_mode","actor":"policy","payload":{}
-    })())
-    return {"ok": True, "state": _state}
-
-def is_stabilized(): return bool(_state["enabled"])
-def clamp_rps(): return CLAMP_RPS
-def cb_errs(): return CB_CONSEC_ERR
-def deprioritized(): return set(DEPRIORITIZE_QUEUES)
-```
-
-**2.3 Wire Stabilize Mode into middleware & circuit breaker**
-
-```py
-# api/main.py (additions)
-from api.stabilize import router_stab, is_stabilized, clamp_rps, cb_errs, deprioritized
-from collections import deque
-from time import perf_counter
-from fastapi import Response
-
-app.include_router(router_stab)
-
-# simple token bucket for RPS clamp (global for demo)
-_bucket = deque()
-BUCKET_SEC = 1.0
-
-@app.middleware("http")
-async def stabilize_mw(request, call_next):
-    start = perf_counter()
-    # Clamp RPS
-    if is_stabilized():
-        now = perf_counter()
-        while _bucket and now - _bucket[0] > BUCKET_SEC:
-            _bucket.popleft()
-        if len(_bucket) >= clamp_rps():
-            return Response("stabilize: throttled", status_code=503)
-        _bucket.append(now)
-    # Deprioritize queues (example header for workers)
-    request.state.deprioritized = deprioritized() if is_stabilized() else set()
-    # Tighten circuit breaker knobs via header hints (downstream aware)
-    request.state.cb_consecutive_errors = cb_errs() if is_stabilized() else 5
-    resp = await call_next(request)
-    return resp
-```
-
-*(If you already have Istio/Envoy, map `is_stabilized` to stricter DestinationRule thresholds instead.)*
-
----
-
-## 3) Web: Audit Timeline UI + Stabilize toggle
-
-**3.1 Server proxies**
-
-```ts
-// web/app/api/proxy/audit/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { API_BASE, PROJECT_API_KEY } from '@/lib/serverEnv';
-
-export async function GET(req: NextRequest) {
-  const q = req.nextUrl.searchParams.get('q') ?? '';
-  const r = await fetch(`${API_BASE}/v1/audit/search?q=${encodeURIComponent(q)}`, {
-    headers: { 'X-API-Key': PROJECT_API_KEY }, cache: 'no-store'
-  });
-  return NextResponse.json(await r.json(), { status: r.status });
-}
-
-export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const r = await fetch(`${API_BASE}/v1/audit/ingest`, {
-    method:'POST', headers:{ 'Content-Type':'application/json','X-API-Key': PROJECT_API_KEY },
-    body: JSON.stringify(body)
-  });
-  return NextResponse.json(await r.json(), { status: r.status });
-}
-```
-
-```ts
-// web/app/api/proxy/stabilize/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { API_BASE, PROJECT_API_KEY } from '@/lib/serverEnv';
-export async function POST(req: NextRequest) {
-  const { action } = await req.json();
-  const url = `${API_BASE}/v1/stabilize/${action}`; // enter|exit
-  const r = await fetch(url, { method:'POST', headers:{ 'X-API-Key': PROJECT_API_KEY }});
-  return NextResponse.json(await r.json(), { status: r.status });
-}
-```
-
-**3.2 UI pages**
-
-```tsx
-// web/app/dashboard/audit/page.tsx
-'use client';
-import { useEffect, useState } from 'react';
-
-type Item = { at:string; source:string; kind:string; subject?:string; actor?:string; payload:any };
-
-export default function AuditPage(){
-  const [q,setQ] = useState('');
-  const [items,setItems] = useState<Item[]>([]);
-  const load = async () => {
-    const r = await fetch(`/api/proxy/audit?q=${encodeURIComponent(q)}`, { cache:'no-store' });
-    const j = await r.json();
-    setItems(j.items || []);
-  };
-  useEffect(()=>{ load(); const id=setInterval(load,10000); return ()=>clearInterval(id); },[]);
-  return (
-    <main style={{padding:24}}>
-      <h1>Audit Timeline</h1>
-      <div style={{display:'flex',gap:8,marginBottom:12}}>
-        <input placeholder="search: release, flag, incident…" value={q} onChange={e=>setQ(e.target.value)} />
-        <button onClick={load}>Search</button>
-      </div>
-      <table style={{width:'100%',borderCollapse:'collapse'}}>
-        <thead><tr><th>Time</th><th>Source</th><th>Kind</th><th>Subject</th><th>Actor</th><th>Payload</th></tr></thead>
-        <tbody>
-          {items.map((it,idx)=>(
-            <tr key={idx}>
-              <td>{new Date(it.at).toLocaleString()}</td>
-              <td>{it.source}</td><td>{it.kind}</td>
-              <td>{it.subject||''}</td><td>{it.actor||''}</td>
-              <td><code style={{fontSize:12}}>{JSON.stringify(it.payload)}</code></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </main>
-  );
-}
-```
-
-```tsx
-// web/app/dashboard/audit/stabilize/page.tsx
-'use client';
-import { useState } from 'react';
-
-export default function StabilizePage(){
-  const [state,setState] = useState<string>('idle');
-  const call = async (action:'enter'|'exit')=>{
-    setState('…');
-    const r = await fetch('/api/proxy/stabilize', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action }) });
-    const j = await r.json();
-    setState(JSON.stringify(j));
-  };
-  return (
-    <main style={{padding:24, display:'grid', gap:12}}>
-      <h1>Stabilize Mode</h1>
-      <div style={{display:'flex', gap:8}}>
-        <button onClick={()=>call('enter')}>Enter Stabilize</button>
-        <button onClick={()=>call('exit')}>Exit Stabilize</button>
-      </div>
-      <pre style={{background:'#f8fafc',padding:12,borderRadius:8}}>{state}</pre>
-      <p style={{color:'#64748b'}}>When enabled: RPS clamped, circuit breakers tighten, non-critical queues de-prioritized. All changes are audited.</p>
-    </main>
-  );
-}
-```
-
----
-
-## 4) Wire other systems to audit
-
-Add calls to `/v1/audit/ingest` wherever meaningful:
-
-* **Incidents** (when opened/updated) → already emitted via Step 10? Add here too.
-* **Deploys** (CI step) → POST `{source:'deploy', kind:'release', subject:'web@<sha>'}`.
-* **Sentry** (server error sample) → Sentry webhook → small receiver that forwards to audit.
-* **Flags** (admin changes) → after any flag change in API, emit `{source:'flags', kind:'flag_set', subject:'<flag>'}`.
-
-*(Optional: add a tiny Next.js API route to receive Sentry webhooks and forward.)*
-
----
-
-## 5) Runbooks (paste-ready)
-
-```md
-<!-- api/runbooks/README.md -->
-# Runbooks
-
-## RB-001: Error Rate Spike
-- Check SLO dashboard. If error_rate > 1% and p99.9 > 400ms:
-  1) Enter Stabilize Mode (`/dashboard/audit/stabilize`)
-  2) Verify auto-rollback result in audit timeline
-  3) If persists: disable `beta_ui` & `experimental_rules` flags
-  4) Page on-call; attach Sentry issue link and latest deploy id
-
-## RB-002: Database Saturation
-- Actions:
-  1) Enable Stabilize
-  2) Raise read replicas / reduce pool by 20%
-  3) Turn off heavy jobs: `reports`, `analytics`
-  4) Add index if hotspot (temporary); plan long-term fix
-
-## RB-003: Push Failure Storm
-- Actions:
-  1) Deprioritize `emails,reports` queues
-  2) Reduce push batch size to 50
-  3) Switch to fallback provider
-```
-
-(Expose a docs page linking to these in your dashboard’s sidebar if desired.)
-
----
-
-## 6) Git
-
-```bash
-git add infra/db/008_audit_timeline.sql api/audit/router.py api/stabilize.py web/app/api/proxy/audit/route.ts \
-        web/app/api/proxy/stabilize/route.ts web/app/dashboard/audit/page.tsx web/app/dashboard/audit/stabilize/page.tsx \
-        api/runbooks/README.md api/main.py
-git commit -m "feat(audit+stabilize): unified audit timeline, stabilize mode (RPS clamp, CB tighten, queue deprioritize), runbooks"
-```
-
----
-
-## 7) Verify
-
-1. **Enter stabilize** at `/dashboard/audit/stabilize` → see **stabilize: enter** in **/dashboard/audit**.
-2. Run a quick bombardment (e.g., your k6 script) and verify 503 throttling occurs while stabilized.
-3. Trigger a small deploy (web or api) and POST a deploy audit record from CI—confirm appears in the timeline.
-4. Flip a feature flag in your admin — confirm **flags/flag\_set** entries appear.
-5. Exit stabilize — confirm **stabilize: exit** audit event.
-
----
-
-## Pro Tips
-
-* Replace audit table with **OpenTelemetry** + **ClickHouse** for long-term, cheap retention & fast queries.
-* Add **subscriptions** (e.g., Slack webhook) for new SEV1/SEV2 audit items.
-* Gate **stabilize** with RBAC and dual-auth if needed (break-glass).
-* Store the **reason** when entering stabilize (form in UI).
-* In production, prefer **Envoy/Istio** for rate limiting & outlier detection; your middleware simply toggles policies.
-
----
-
-## What’s next?
-
-* **Step 12 (FINAL):** Production hardening + launch handoff
-
-  * WAF/rate-limit presets, backups & PITR drills, DR flipbook, cost guardrails, data retention & PII scrubbing, final checklists (ops, security, mobile stores), and “Day-30 optimization plan.”
-
-Want me to proceed to **STEP 12** now?
+If you want, I can now run this as your agent and emit the concrete Cursor actions for your repo.

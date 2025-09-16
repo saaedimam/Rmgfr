@@ -43,6 +43,7 @@ function main() {
   console.log('OK');
 }
 
-if (require.main === module) {
+// Check if this is the main module (ES module equivalent)
+if (import.meta.url.endsWith(process.argv[1]) || import.meta.url.includes('llm_validator.js')) {
   main();
 }
