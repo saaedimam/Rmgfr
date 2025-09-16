@@ -5,4 +5,11 @@ Sentry.init({
   tracesSampleRate: 1.0,
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1.0,
+  beforeSend(event) {
+    if (event.user) { 
+      delete event.user.email; 
+      delete (event.user as any).ip_address; 
+    }
+    return event;
+  },
 });
