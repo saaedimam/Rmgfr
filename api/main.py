@@ -6,13 +6,68 @@ import sentry_sdk
 from typing import Optional, List
 from api.admin import router as admin_router
 from api.admin_rules import router_rules
+from api.flags_admin import router_flags
+from api.notify.router import router_notify
 from api.rules.engine import evaluate_rules
+from obs import init_obs
+from flags_middleware import ReleaseChannelFlags
+from api.slo import record_latency, router_slo
+from api.incident.router import router_inc
+from api.audit.router import router_audit
+from api.stabilize import router_stab, is_stabilized, clamp_rps, cb_errs, deprioritized
+from time import perf_counter
+from collections import deque
+from fastapi import Response, Depends
+from fastapi_limiter.depends import RateLimiter
+from rate_limit import setup_rate_limit
 
 sentry_sdk.init(dsn=os.getenv("SENTRY_DSN_API"))
 
 DB_DSN = os.getenv("SUPABASE_DB_URL")
 
 app = FastAPI(title="Platform API", version="1.1.0")
+app.add_middleware(ReleaseChannelFlags)
+init_obs()
+
+# --- SLO Metrics Middleware ---
+@app.middleware("http")
+async def metrics_mw(request, call_next):
+    start = perf_counter()
+    try:
+        resp = await call_next(request)
+        ok = resp.status_code < 500
+    except Exception:
+        ok = False
+        raise
+    finally:
+        path = request.url.path
+        if path in ("/v1/events","/v1/decisions","/health"):
+            ms = (perf_counter() - start) * 1000.0
+            record_latency(path, ms, ok)
+    return resp
+
+# --- Stabilize Mode Middleware ---
+# simple token bucket for RPS clamp (global for demo)
+_bucket = deque()
+BUCKET_SEC = 1.0
+
+@app.middleware("http")
+async def stabilize_mw(request, call_next):
+    start = perf_counter()
+    # Clamp RPS
+    if is_stabilized():
+        now = perf_counter()
+        while _bucket and now - _bucket[0] > BUCKET_SEC:
+            _bucket.popleft()
+        if len(_bucket) >= clamp_rps():
+            return Response("stabilize: throttled", status_code=503)
+        _bucket.append(now)
+    # Deprioritize queues (example header for workers)
+    request.state.deprioritized = deprioritized() if is_stabilized() else set()
+    # Tighten circuit breaker knobs via header hints (downstream aware)
+    request.state.cb_consecutive_errors = cb_errs() if is_stabilized() else 5
+    resp = await call_next(request)
+    return resp
 
 # --- CORS (tighten as needed) ---
 app.add_middleware(
@@ -218,3 +273,18 @@ async def list_cases(request: Request, status: Optional[str] = None, page: int =
 # --- mount admin router ---
 app.include_router(admin_router)
 app.include_router(router_rules)
+app.include_router(router_flags)
+app.include_router(router_notify)
+app.include_router(router_slo)
+app.include_router(router_inc)
+app.include_router(router_audit)
+app.include_router(router_stab)
+
+# --- Rate Limiting Setup ---
+@app.on_event("startup")
+async def on_startup():
+    await setup_rate_limit()
+
+# --- Rate Limited Health Endpoint ---
+@app.get("/health", dependencies=[Depends(RateLimiter(times=60, seconds=60))])
+async def health(): return {"ok": True}

@@ -68,7 +68,7 @@ class Profile(Base):
     email: Mapped[str] = mapped_column(String(255), nullable=True)
     phone: Mapped[str] = mapped_column(String(50), nullable=True)
     device_fingerprint: Mapped[str] = mapped_column(String(255), nullable=True)
-    metadata: Mapped[dict] = mapped_column(JSON, default=dict)
+    user_metadata: Mapped[dict] = mapped_column(JSON, default=dict)
     created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
@@ -97,7 +97,7 @@ class Decision(Base):
     risk_score: Mapped[float] = mapped_column(DECIMAL(3, 2), nullable=True)
     reasons: Mapped[list] = mapped_column(JSON, default=list)
     rules_fired: Mapped[list] = mapped_column(JSON, default=list)
-    metadata: Mapped[dict] = mapped_column(JSON, default=dict)
+    user_metadata: Mapped[dict] = mapped_column(JSON, default=dict)
     created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 class Case(Base):

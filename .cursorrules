@@ -1,0 +1,22 @@
+# Project: Anti-Fraud Platform (Web + Mobile)
+# Architecture defaults (change only if impossible)
+- Web: Next.js 14 + TypeScript (App Router/RSC) on Vercel
+- API: FastAPI (Python 3.12)
+- Data: Postgres (Supabase) with RLS; Redis (optional caching)
+- Auth: Clerk
+- Mobile: Expo + React Native (EAS)
+- CI/CD: GitHub Actions
+- Observability: Sentry + basic OpenTelemetry
+
+# Coding rules
+- TypeScript: strict; no "any"
+- Python: pydantic v2, async IO where practical
+- Security: enforce RLS; never leak secrets; OWASP top 10 mitigations
+- Testing-first: write failing tests before feature edits; maintain test commands in scripts
+- Output diffs, not essays; keep edits atomic and reversible
+- When referencing docs, prefer @docs/requirements/*.md
+
+# Prompting rules inside Cursor
+- Ask at most 3 questions if critical info missing; otherwise proceed with safe defaults and document assumptions at top of PR
+- Provide rollback commands for risky migrations
+- Keep API p99.9 < 400ms; Web LCP < 2.5s; Mobile cold start < 3s

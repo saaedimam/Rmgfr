@@ -1,0 +1,6 @@
+date,customer_segment,fpr,tpr,throughput
+2025-09-16,new_user,0.012,0.78,1200
+2025-09-16,returning,0.008,0.85,2400
+2025-09-16,vip,0.003,0.9,180
+2025-09-16,country=BD,0.01,0.82,1600
+2025-09-16,country!=BD,0.009,0.8,900

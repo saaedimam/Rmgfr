@@ -1,0 +1,11 @@
+# ISSUES_TODO (open as GitHub issues)
+- [ ] Define acceptance criteria per journey
+- [ ] Compliance review (GDPR/CCPA/PCI-DSS) placeholders
+- [ ] Analytics taxonomy (events, props)
+- [ ] Content inventory (copy placeholders)
+- [ ] Security audit requirements
+- [ ] Performance benchmarks and SLAs
+- [ ] Integration testing strategy
+- [ ] Disaster recovery planning
+- [ ] Data retention policies
+- [ ] API rate limiting strategy

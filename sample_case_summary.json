@@ -1,0 +1,33 @@
+{
+  "summary": "Payments from user u_123 across two devices spiked after BIN change; IP in high-risk ASN.",
+  "key_entities": [
+    {
+      "type": "user",
+      "id": "u_123"
+    },
+    {
+      "type": "ip",
+      "id": "203.0.113.5"
+    }
+  ],
+  "suspected_patterns": [
+    "bin_change_spike",
+    "multi_device_escalation"
+  ],
+  "next_actions": [
+    "step-up: selfie_liveness",
+    "freeze card temporarily",
+    "notify fraud ops"
+  ],
+  "confidence": 0.78,
+  "citations": [
+    {
+      "artifact_type": "event",
+      "artifact_id": "evt_9f2..."
+    },
+    {
+      "artifact_type": "rule",
+      "artifact_id": "rule_42"
+    }
+  ]
+}

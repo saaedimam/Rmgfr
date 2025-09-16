@@ -1,0 +1,30 @@
+org: Anti-Fraud Solutions Inc
+project: Anti-Fraud Platform
+sitemap:
+  - path: /
+    title: Dashboard
+    description: Main fraud monitoring dashboard
+  - path: /transactions
+    title: Transactions
+    description: Transaction monitoring and risk assessment
+  - path: /cases
+    title: Cases
+    description: Fraud case investigation and management
+  - path: /policies
+    title: Policies
+    description: Fraud detection rule configuration
+  - path: /analytics
+    title: Analytics
+    description: Fraud analytics and reporting
+  - path: /settings
+    title: Settings
+    description: System configuration and user management
+  - path: /api/health
+    title: Health (API)
+    description: System health check endpoint
+  - path: /api/transactions
+    title: Transactions API
+    description: Transaction scoring and decision API
+  - path: /api/cases
+    title: Cases API
+    description: Case management API

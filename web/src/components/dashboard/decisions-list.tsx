@@ -1,76 +1,95 @@
-import React from "react"
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
+"use client";
 
-interface Decision {
-  id: string
-  event_id: string
-  outcome: string
-  score?: number
-  reasons: string[]
-  decided_at: string
-}
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
-interface DecisionsListProps {
-  decisions: Decision[]
-}
+const recentDecisions = [
+  {
+    id: "dec_123",
+    eventId: "evt_123",
+    decision: "allow",
+    riskScore: 0.2,
+    timestamp: "2024-01-15T10:30:00Z",
+    reasons: ["Low risk profile", "Normal transaction pattern"],
+  },
+  {
+    id: "dec_124",
+    eventId: "evt_124",
+    decision: "deny",
+    riskScore: 0.9,
+    timestamp: "2024-01-15T10:25:00Z",
+    reasons: ["High velocity", "Suspicious device"],
+  },
+  {
+    id: "dec_125",
+    eventId: "evt_125",
+    decision: "allow",
+    riskScore: 0.1,
+    timestamp: "2024-01-15T10:20:00Z",
+    reasons: ["New user signup", "Clean profile"],
+  },
+  {
+    id: "dec_126",
+    eventId: "evt_126",
+    decision: "review",
+    riskScore: 0.6,
+    timestamp: "2024-01-15T10:15:00Z",
+    reasons: ["Medium risk", "Unusual amount"],
+  },
+];
 
-export function DecisionsList({ decisions }: DecisionsListProps) {
-  const formatTimestamp = (timestamp: string) => {
-    return new Date(timestamp).toLocaleString()
-  }
-
-  const getOutcomeBadge = (outcome: string) => {
-    const variants = {
-      allow: "success",
-      deny: "danger",
-      review: "warning"
-    } as const
-    
-    return variants[outcome as keyof typeof variants] || "default"
-  }
-
+export function DecisionsList() {
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-gray-900">Recent Decisions</h2>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Outcome</TableHead>
-            <TableHead>Score</TableHead>
-            <TableHead>Reasons</TableHead>
-            <TableHead>Event ID</TableHead>
-            <TableHead>Decided At</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {decisions.map((decision) => (
-            <TableRow key={decision.id}>
-              <TableCell>
-                <Badge variant={getOutcomeBadge(decision.outcome)}>
-                  {decision.outcome}
-                </Badge>
-              </TableCell>
-              <TableCell>{decision.score || "-"}</TableCell>
-              <TableCell>
-                <div className="flex flex-wrap gap-1">
-                  {decision.reasons.map((reason, index) => (
-                    <Badge key={index} variant="info" className="text-xs">
-                      {reason}
-                    </Badge>
-                  ))}
+    <Card>
+      <CardHeader>
+        <CardTitle>Recent Decisions</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {recentDecisions.map((decision) => (
+            <div
+              key={decision.id}
+              className="flex items-center justify-between p-3 border rounded-lg"
+            >
+              <div className="flex items-center space-x-3">
+                <div
+                  className={`w-2 h-2 rounded-full ${
+                    decision.decision === "allow"
+                      ? "bg-green-500"
+                      : decision.decision === "deny"
+                      ? "bg-red-500"
+                      : "bg-yellow-500"
+                  }`}
+                />
+                <div>
+                  <p className="font-medium text-sm">
+                    {decision.decision.toUpperCase()}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Risk: {(decision.riskScore * 100).toFixed(0)}%
+                  </p>
                 </div>
-              </TableCell>
-              <TableCell>
-                <code className="text-xs bg-gray-100 px-2 py-1 rounded">
-                  {decision.event_id.slice(0, 8)}...
-                </code>
-              </TableCell>
-              <TableCell>{formatTimestamp(decision.decided_at)}</TableCell>
-            </TableRow>
+              </div>
+              <div className="text-right">
+                <Badge
+                  variant={
+                    decision.decision === "allow"
+                      ? "default"
+                      : decision.decision === "deny"
+                      ? "destructive"
+                      : "secondary"
+                  }
+                >
+                  {decision.decision}
+                </Badge>
+                <p className="text-xs text-gray-500 mt-1">
+                  {new Date(decision.timestamp).toLocaleTimeString()}
+                </p>
+              </div>
+            </div>
           ))}
-        </TableBody>
-      </Table>
-    </div>
-  )
+        </div>
+      </CardContent>
+    </Card>
+  );
 }

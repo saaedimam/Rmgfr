@@ -1,0 +1,45 @@
+name: Build Mobile App
+on:
+  push:
+    branches: [main]
+    paths: ['platform/mobile/**']
+  pull_request:
+    branches: [main]
+    paths: ['platform/mobile/**']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+      
+      - name: Install pnpm
+        run: npm install -g pnpm
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: ./platform/mobile
+      
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      
+      - name: Build Android
+        run: |
+          cd platform/mobile
+          npx eas build --platform android --non-interactive
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      
+      - name: Build iOS
+        run: |
+          cd platform/mobile
+          npx eas build --platform ios --non-interactive
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}

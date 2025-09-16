@@ -1,0 +1,36 @@
+{
+  "name": "antifraud-platform",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:web\" \"npm run dev:api\"",
+    "dev:web": "pnpm --filter web dev",
+    "dev:api": "cd api && python -m uvicorn src.main:app --reload --host 0.0.0.0 --port 8000",
+    "dev:mobile": "pnpm --filter mobile start",
+    "build": "npm run build:web && npm run build:api",
+    "build:web": "pnpm --filter web build",
+    "build:api": "cd api && pip install -r requirements.txt",
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "cd api && python -m pytest tests/ -v",
+    "test:e2e": "npx playwright test",
+    "test:e2e:ui": "npx playwright test --ui",
+    "lint": "npm run lint:web && npm run lint:api",
+    "lint:web": "pnpm --filter web lint",
+    "lint:api": "cd api && black --check src/ && isort --check-only src/",
+    "format": "npm run format:web && npm run format:api",
+    "format:web": "pnpm --filter web lint -- --fix",
+    "format:api": "cd api && black src/ && isort src/",
+    "install:all": "pnpm install && cd api && pip install -r requirements.txt",
+    "setup:db": "cd api && python -c \"from src.models.database import engine; import asyncio; asyncio.run(engine.create_all())\"",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}
