@@ -41,7 +41,7 @@ if os.getenv("SENTRY_DSN_API"):
 async def lifespan(app: FastAPI):
     """Application lifespan manager"""
     logger.info("Starting Anti-Fraud Platform API")
-    
+
     # Initialize database
     try:
         from .services.database import init_database
@@ -50,9 +50,9 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"Failed to initialize database: {e}")
         # Continue without database for now
-    
+
     yield
-    
+
     # Cleanup
     try:
         from .services.database import close_database
@@ -60,7 +60,7 @@ async def lifespan(app: FastAPI):
         logger.info("Database connection closed")
     except Exception as e:
         logger.error(f"Error closing database: {e}")
-    
+
     logger.info("Shutting down Anti-Fraud Platform API")
 
 

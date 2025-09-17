@@ -15,15 +15,15 @@ class FraudDetectionDemo:
     def __init__(self, base_url: str = "http://localhost:8000"):
         self.base_url = base_url
         self.session = None
-    
+
     async def __aenter__(self):
         self.session = aiohttp.ClientSession()
         return self
-    
+
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         if self.session:
             await self.session.close()
-    
+
     async def send_event(self, event: Dict[str, Any]) -> Dict[str, Any]:
         """Send event to the API"""
         try:
@@ -36,7 +36,7 @@ class FraudDetectionDemo:
         except Exception as e:
             print(f"❌ Error sending event: {e}")
             return {"error": str(e)}
-    
+
     async def get_dashboard_stats(self) -> Dict[str, Any]:
         """Get dashboard statistics"""
         try:
@@ -48,11 +48,11 @@ class FraudDetectionDemo:
         except Exception as e:
             print(f"❌ Error getting dashboard stats: {e}")
             return {"error": str(e)}
-    
+
     def generate_test_events(self, count: int = 20) -> List[Dict[str, Any]]:
         """Generate test events with varying risk levels"""
         events = []
-        
+
         # Low risk events
         low_risk_events = [
             {
@@ -66,7 +66,7 @@ class FraudDetectionDemo:
             }
             for i in range(count // 3)
         ]
-        
+
         # Medium risk events
         medium_risk_events = [
             {
@@ -80,7 +80,7 @@ class FraudDetectionDemo:
             }
             for i in range(count // 3, 2 * count // 3)
         ]
-        
+
         # High risk events
         high_risk_events = [
             {
@@ -93,44 +93,44 @@ class FraudDetectionDemo:
             }
             for i in range(2 * count // 3, count)
         ]
-        
+
         events.extend(low_risk_events)
         events.extend(medium_risk_events)
         events.extend(high_risk_events)
-        
+
         # Shuffle events
         random.shuffle(events)
-        
+
         return events
-    
+
     async def run_demo(self):
         """Run the real-time fraud detection demo"""
         print("🎯 Real-time Fraud Detection Demo")
         print("=" * 40)
         print(f"Time: {datetime.now().isoformat()}")
         print()
-        
+
         # Generate test events
         print("📝 Generating test events...")
         events = self.generate_test_events(15)
         print(f"✅ Generated {len(events)} test events")
-        
+
         # Process events in real-time
         print("\n🔄 Processing events in real-time...")
         print("-" * 40)
-        
+
         results = []
         for i, event in enumerate(events, 1):
             print(f"Event {i:2d}: {event['event_type']:8s} | ", end="")
-            
+
             # Send event
             result = await self.send_event(event)
-            
+
             if "error" not in result:
                 decision = result.get("decision", "unknown")
                 risk_score = result.get("risk_score", 0.0)
                 processing_time = result.get("processing_time_ms", 0.0)
-                
+
                 # Color code the decision
                 if decision == "allow":
                     decision_color = "🟢"
@@ -140,25 +140,25 @@ class FraudDetectionDemo:
                     decision_color = "🟡"
                 else:
                     decision_color = "⚪"
-                
+
                 print(f"{decision_color} {decision:6s} | Risk: {risk_score:.3f} | Time: {processing_time:.1f}ms")
                 results.append(result)
             else:
                 print(f"❌ Error: {result['error']}")
-            
+
             # Small delay to simulate real-time processing
             await asyncio.sleep(0.2)
-        
+
         # Show summary
         print("\n" + "=" * 40)
         print("📊 Processing Summary")
         print("=" * 40)
-        
+
         if results:
             decisions = [r.get("decision", "unknown") for r in results]
             risk_scores = [r.get("risk_score", 0.0) for r in results]
             processing_times = [r.get("processing_time_ms", 0.0) for r in results]
-            
+
             print(f"Total Events: {len(results)}")
             print(f"Allowed: {decisions.count('allow')}")
             print(f"Denied: {decisions.count('deny')}")
@@ -167,11 +167,11 @@ class FraudDetectionDemo:
             print(f"Average Processing Time: {sum(processing_times) / len(processing_times):.1f}ms")
             print(f"Max Risk Score: {max(risk_scores):.3f}")
             print(f"Min Risk Score: {min(risk_scores):.3f}")
-        
+
         # Get dashboard stats
         print("\n📈 Dashboard Statistics")
         print("-" * 40)
-        
+
         stats = await self.get_dashboard_stats()
         if "error" not in stats:
             print(f"Total Events (1h): {stats.get('total_events', 0)}")
@@ -181,7 +181,7 @@ class FraudDetectionDemo:
             print(f"Average Risk Score: {stats.get('avg_risk_score', 0.0):.3f}")
         else:
             print(f"❌ Error getting dashboard stats: {stats['error']}")
-        
+
         print("\n✅ Demo completed!")
 
 async def main():
@@ -191,7 +191,7 @@ async def main():
     print("This demo shows real-time fraud detection capabilities")
     print("Make sure the API server is running on http://localhost:8000")
     print()
-    
+
     async with FraudDetectionDemo() as demo:
         await demo.run_demo()
 

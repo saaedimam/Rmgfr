@@ -58,7 +58,7 @@ async def get_dashboard_stats(
     try:
         # Get basic stats
         stats_sql = """
-        SELECT 
+        SELECT
             COUNT(*) as total_events,
             COUNT(CASE WHEN decision = 'allow' THEN 1 END) as allowed_events,
             COUNT(CASE WHEN decision = 'deny' THEN 1 END) as denied_events,
@@ -66,13 +66,13 @@ async def get_dashboard_stats(
             AVG(risk_score) as avg_risk_score,
             MAX(risk_score) as max_risk_score,
             MIN(risk_score) as min_risk_score
-        FROM events 
-        WHERE project_id = $1 
+        FROM events
+        WHERE project_id = $1
         AND created_at >= NOW() - INTERVAL '${hours} hours'
         """
-        
+
         stats = await db.execute_one(stats_sql, project_id)
-        
+
         if not stats:
             return DashboardStats(
                 total_events=0,
@@ -85,7 +85,7 @@ async def get_dashboard_stats(
                 time_period_hours=hours,
                 last_updated=datetime.now()
             )
-        
+
         return DashboardStats(
             total_events=stats["total_events"],
             allowed_events=stats["allowed_events"],
@@ -97,7 +97,7 @@ async def get_dashboard_stats(
             time_period_hours=hours,
             last_updated=datetime.now()
         )
-        
+
     except Exception as e:
         logger.error(f"Failed to get dashboard stats: {e}")
         raise HTTPException(
@@ -118,10 +118,10 @@ async def get_event_trends(
     try:
         # Calculate number of intervals
         num_intervals = (hours * 60) // interval_minutes
-        
+
         trends_sql = """
         WITH time_series AS (
-            SELECT 
+            SELECT
                 generate_series(
                     NOW() - INTERVAL '${hours} hours',
                     NOW(),
@@ -129,7 +129,7 @@ async def get_event_trends(
                 ) as time_bucket
         ),
         event_buckets AS (
-            SELECT 
+            SELECT
                 ts.time_bucket,
                 COUNT(e.id) as total_events,
                 COUNT(CASE WHEN e.decision = 'allow' THEN 1 END) as allowed_events,
@@ -137,14 +137,14 @@ async def get_event_trends(
                 COUNT(CASE WHEN e.decision = 'review' THEN 1 END) as review_events,
                 AVG(e.risk_score) as avg_risk_score
             FROM time_series ts
-            LEFT JOIN events e ON 
-                e.project_id = $1 
-                AND e.created_at >= ts.time_bucket 
+            LEFT JOIN events e ON
+                e.project_id = $1
+                AND e.created_at >= ts.time_bucket
                 AND e.created_at < ts.time_bucket + INTERVAL '${interval_minutes} minutes'
             GROUP BY ts.time_bucket
             ORDER BY ts.time_bucket
         )
-        SELECT 
+        SELECT
             time_bucket as timestamp,
             COALESCE(total_events, 0) as total_events,
             COALESCE(allowed_events, 0) as allowed_events,
@@ -153,9 +153,9 @@ async def get_event_trends(
             COALESCE(avg_risk_score, 0.0) as avg_risk_score
         FROM event_buckets
         """
-        
+
         trends = await db.execute_query(trends_sql, project_id)
-        
+
         return [
             EventTrend(
                 timestamp=trend["timestamp"],
@@ -167,7 +167,7 @@ async def get_event_trends(
             )
             for trend in trends
         ]
-        
+
     except Exception as e:
         logger.error(f"Failed to get event trends: {e}")
         raise HTTPException(
@@ -189,8 +189,8 @@ async def get_top_rules(
         # This would typically come from a rules_fired table
         # For now, we'll use simplified logic based on decisions
         rules_sql = """
-        SELECT 
-            'risk_band_' || CASE 
+        SELECT
+            'risk_band_' || CASE
                 WHEN risk_score < 0.3 THEN 'low'
                 WHEN risk_score < 0.6 THEN 'medium'
                 WHEN risk_score < 0.8 THEN 'high'
@@ -200,16 +200,16 @@ async def get_top_rules(
             COUNT(CASE WHEN decision = 'deny' THEN 1 END) as deny_count,
             COUNT(CASE WHEN decision = 'allow' THEN 1 END) as allow_count,
             COUNT(CASE WHEN decision = 'review' THEN 1 END) as review_count
-        FROM events 
-        WHERE project_id = $1 
+        FROM events
+        WHERE project_id = $1
         AND created_at >= NOW() - INTERVAL '${hours} hours'
         GROUP BY rule_name
         ORDER BY fire_count DESC
         LIMIT $2
         """
-        
+
         rules = await db.execute_query(rules_sql, project_id, limit)
-        
+
         return [
             TopRule(
                 rule_name=rule["rule_name"],
@@ -220,7 +220,7 @@ async def get_top_rules(
             )
             for rule in rules
         ]
-        
+
     except Exception as e:
         logger.error(f"Failed to get top rules: {e}")
         raise HTTPException(
@@ -239,7 +239,7 @@ async def get_recent_events(
     """
     try:
         events_sql = """
-        SELECT 
+        SELECT
             e.id,
             e.event_type,
             e.profile_id,
@@ -255,9 +255,9 @@ async def get_recent_events(
         ORDER BY e.created_at DESC
         LIMIT $2
         """
-        
+
         events = await db.execute_query(events_sql, project_id, limit)
-        
+
         return [
             {
                 "id": event["id"],
@@ -272,7 +272,7 @@ async def get_recent_events(
             }
             for event in events
         ]
-        
+
     except Exception as e:
         logger.error(f"Failed to get recent events: {e}")
         raise HTTPException(
@@ -295,19 +295,19 @@ async def get_dashboard(
         trends_task = get_event_trends(project_id, hours, 60, db)
         rules_task = get_top_rules(project_id, hours, 10, db)
         events_task = get_recent_events(project_id, 50, db)
-        
+
         # Wait for all tasks to complete
         stats, trends, rules, events = await asyncio.gather(
             stats_task, trends_task, rules_task, events_task
         )
-        
+
         return DashboardResponse(
             stats=stats,
             trends=trends,
             top_rules=rules,
             recent_events=events
         )
-        
+
     except Exception as e:
         logger.error(f"Failed to get dashboard: {e}")
         raise HTTPException(

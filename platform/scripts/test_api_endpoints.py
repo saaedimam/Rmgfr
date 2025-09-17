@@ -15,15 +15,15 @@ class APITester:
     def __init__(self, base_url: str = "http://localhost:8000"):
         self.base_url = base_url
         self.session = None
-    
+
     async def __aenter__(self):
         self.session = aiohttp.ClientSession()
         return self
-    
+
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         if self.session:
             await self.session.close()
-    
+
     async def test_health_check(self) -> Dict[str, Any]:
         """Test health check endpoint"""
         print("🔍 Testing health check...")
@@ -37,7 +37,7 @@ class APITester:
         except Exception as e:
             print(f"❌ Health check failed: {e}")
             return {"error": str(e)}
-    
+
     async def test_database_health(self) -> Dict[str, Any]:
         """Test database health endpoint"""
         print("🔍 Testing database health...")
@@ -49,7 +49,7 @@ class APITester:
         except Exception as e:
             print(f"❌ Database health failed: {e}")
             return {"error": str(e)}
-    
+
     async def test_create_event(self, event_data: Dict[str, Any]) -> Dict[str, Any]:
         """Test event creation endpoint"""
         print(f"🔍 Testing event creation: {event_data['event_type']}...")
@@ -64,7 +64,7 @@ class APITester:
         except Exception as e:
             print(f"❌ Event creation failed: {e}")
             return {"error": str(e)}
-    
+
     async def test_list_events(self, project_id: str = "550e8400-e29b-41d4-a716-446655440001") -> Dict[str, Any]:
         """Test event listing endpoint"""
         print("🔍 Testing event listing...")
@@ -79,7 +79,7 @@ class APITester:
         except Exception as e:
             print(f"❌ Event listing failed: {e}")
             return {"error": str(e)}
-    
+
     async def test_event_stats(self, project_id: str = "550e8400-e29b-41d4-a716-446655440001") -> Dict[str, Any]:
         """Test event statistics endpoint"""
         print("🔍 Testing event statistics...")
@@ -94,7 +94,7 @@ class APITester:
         except Exception as e:
             print(f"❌ Event stats failed: {e}")
             return {"error": str(e)}
-    
+
     async def test_dashboard_stats(self, project_id: str = "550e8400-e29b-41d4-a716-446655440001") -> Dict[str, Any]:
         """Test dashboard statistics endpoint"""
         print("🔍 Testing dashboard statistics...")
@@ -109,7 +109,7 @@ class APITester:
         except Exception as e:
             print(f"❌ Dashboard stats failed: {e}")
             return {"error": str(e)}
-    
+
     async def test_replay_worker(self) -> Dict[str, Any]:
         """Test replay worker endpoints"""
         print("🔍 Testing replay worker...")
@@ -118,7 +118,7 @@ class APITester:
             async with self.session.get(f"{self.base_url}/v1/replay/worker/status") as response:
                 data = await response.json()
                 print(f"✅ Replay worker status: {data}")
-            
+
             # Test enqueue replay
             replay_data = {
                 "event_ids": ["evt_1", "evt_2"],
@@ -131,25 +131,25 @@ class APITester:
             ) as response:
                 data = await response.json()
                 print(f"✅ Replay job enqueued: {data['job_id']}")
-            
+
             return data
         except Exception as e:
             print(f"❌ Replay worker test failed: {e}")
             return {"error": str(e)}
-    
+
     async def run_comprehensive_test(self):
         """Run comprehensive API test suite"""
         print("🚀 Starting Comprehensive API Test Suite")
         print("=" * 50)
-        
+
         # Test basic health
         await self.test_health_check()
         await self.test_database_health()
-        
+
         print("\n" + "=" * 50)
         print("📊 Testing Event Processing Pipeline")
         print("=" * 50)
-        
+
         # Test different event types
         test_events = [
             {
@@ -186,29 +186,29 @@ class APITester:
                 "device_fingerprint": "device_hash_789"
             }
         ]
-        
+
         # Process test events
         for i, event in enumerate(test_events, 1):
             print(f"\n--- Test Event {i} ---")
             await self.test_create_event(event)
             await asyncio.sleep(0.1)  # Small delay between events
-        
+
         print("\n" + "=" * 50)
         print("📈 Testing Analytics and Monitoring")
         print("=" * 50)
-        
+
         # Test analytics endpoints
         await self.test_list_events()
         await self.test_event_stats()
         await self.test_dashboard_stats()
-        
+
         print("\n" + "=" * 50)
         print("🔄 Testing Replay Worker")
         print("=" * 50)
-        
+
         # Test replay worker
         await self.test_replay_worker()
-        
+
         print("\n" + "=" * 50)
         print("✅ Comprehensive API Test Suite Completed!")
         print("=" * 50)
@@ -220,7 +220,7 @@ async def main():
     print(f"Testing against: http://localhost:8000")
     print(f"Time: {datetime.now().isoformat()}")
     print()
-    
+
     async with APITester() as tester:
         await tester.run_comprehensive_test()
 
