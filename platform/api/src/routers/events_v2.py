@@ -26,7 +26,6 @@ class EventCreate(BaseModel):
     user_agent: Optional[str] = Field(None, description="User agent string")
     amount: Optional[float] = Field(None, description="Transaction amount (for payment events)")
     currency: Optional[str] = Field(None, description="Currency code (for payment events)")
-
     @validator('event_type')
     def validate_event_type(cls, v):
         allowed_types = ['login', 'signup', 'checkout', 'payment', 'custom']
@@ -83,7 +82,6 @@ async def create_event(
 
         # Extract IP address from request
         ip_address = event.ip_address or request.client.host if request.client else None
-
         # Calculate risk score using fraud engine
         fraud_engine = FraudEngine()
         risk_score = await fraud_engine.calculate_risk_score(
@@ -100,7 +98,6 @@ async def create_event(
 
         # Get latest FPR for this action type (simplified)
         latest_fpr = 0.01  # Default FPR
-
         # Make decision using decision gate
         decision_context = DecisionContext(
             event_type=event.event_type,
@@ -110,7 +107,6 @@ async def create_event(
         )
 
         action, confidence, reasons = decision_gate.decide(decision_context)
-
         # Store event in database
         event_data = {
             "id": event_id,
@@ -128,7 +124,6 @@ async def create_event(
             "decision": action.value,
             "created_at": datetime.now()
         }
-
         # Insert event
         insert_sql = """
         INSERT INTO events (
@@ -139,7 +134,6 @@ async def create_event(
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
         )
         """
-
         await db.execute_command(
             insert_sql,
             event_id, project_id, event.event_type, event.event_data,
@@ -147,7 +141,6 @@ async def create_event(
             ip_address, event.user_agent, event.amount, event.currency,
             risk_score, action.value, datetime.now()
         )
-
         # Create decision record
         decision_id = str(uuid.uuid4())
         decision_sql = """
@@ -157,13 +150,11 @@ async def create_event(
         """
 
         rules_fired = [f"risk_band_{decision_context.risk_score:.1f}", f"segment_{customer_segment}"]
-
         await db.execute_command(
             decision_sql,
             decision_id, project_id, event_id, action.value,
             risk_score, reasons, rules_fired, datetime.now()
         )
-
         # Create case if decision is review
         if action == Action.REVIEW:
             case_id = str(uuid.uuid4())
@@ -181,6 +172,12 @@ async def create_event(
 
         logger.info(f"Processed event {event_id}: {action.value} (risk: {risk_score:.3f})")
 
+
+        # Calculate processing time
+        processing_time = (datetime.now() - start_time).total_seconds() * 1000
+
+        logger.info(f"Processed event {event_id}: {action.value} (risk: {risk_score:.3f})")
+
         return EventProcessingResult(
             event_id=event_id,
             risk_score=risk_score,
@@ -189,7 +186,6 @@ async def create_event(
             rules_fired=rules_fired,
             processing_time_ms=processing_time
         )
-
     except Exception as e:
         logger.error(f"Failed to process event: {e}")
         raise HTTPException(
@@ -214,12 +210,10 @@ async def list_events(
         where_conditions = ["project_id = $1"]
         params = [project_id]
         param_count = 1
-
         if event_type:
             param_count += 1
             where_conditions.append(f"event_type = ${param_count}")
             params.append(event_type)
-
         if decision:
             param_count += 1
             where_conditions.append(f"decision = ${param_count}")
@@ -227,21 +221,28 @@ async def list_events(
 
         where_clause = " AND ".join(where_conditions)
 
+
+        where_clause = " AND ".join(where_conditions)
+
         # Get total count
         count_sql = f"SELECT COUNT(*) FROM events WHERE {where_clause}"
         total = await db.execute_one(count_sql, *params)
         total_count = total["count"] if total else 0
-
         # Get events with pagination
         offset = (page - 1) * limit
         events_sql = f"""
         SELECT id, event_type, event_data, profile_id, session_id, device_fingerprint,
                ip_address, user_agent, amount, currency, risk_score, decision, created_at
         FROM events
+        FROM events
         WHERE {where_clause}
         ORDER BY created_at DESC
         LIMIT ${param_count + 1} OFFSET ${param_count + 2}
         """
+
+        params.extend([limit, offset])
+        events = await db.execute_query(events_sql, *params)
+
 
         params.extend([limit, offset])
         events = await db.execute_query(events_sql, *params)
@@ -265,14 +266,12 @@ async def list_events(
             )
             for event in events
         ]
-
         return EventListResponse(
             events=event_responses,
             total=total_count,
             page=page,
             limit=limit
         )
-
     except Exception as e:
         logger.error(f"Failed to list events: {e}")
         raise HTTPException(
@@ -299,12 +298,17 @@ async def get_event(
 
         event = await db.execute_one(event_sql, event_id, project_id)
 
+        FROM events
+        WHERE id = $1 AND project_id = $2
+        """
+
+        event = await db.execute_one(event_sql, event_id, project_id)
+
         if not event:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Event not found"
             )
-
         return EventResponse(
             id=event["id"],
             event_type=event["event_type"],
@@ -320,7 +324,6 @@ async def get_event(
             decision=event["decision"],
             created_at=event["created_at"]
         )
-
     except HTTPException:
         raise
     except Exception as e:
@@ -342,6 +345,7 @@ async def get_event_stats(
     try:
         stats_sql = """
         SELECT
+        SELECT
             COUNT(*) as total_events,
             COUNT(CASE WHEN decision = 'allow' THEN 1 END) as allowed_events,
             COUNT(CASE WHEN decision = 'deny' THEN 1 END) as denied_events,
@@ -349,6 +353,13 @@ async def get_event_stats(
             AVG(risk_score) as avg_risk_score,
             MAX(risk_score) as max_risk_score,
             MIN(risk_score) as min_risk_score
+        FROM events
+        WHERE project_id = $1
+        AND created_at >= NOW() - INTERVAL '${hours} hours'
+        """
+
+        stats = await db.execute_one(stats_sql, project_id)
+
         FROM events
         WHERE project_id = $1
         AND created_at >= NOW() - INTERVAL '${hours} hours'
@@ -367,7 +378,6 @@ async def get_event_stats(
                 "min_risk_score": 0.0,
                 "time_period_hours": hours
             }
-
         return {
             "total_events": stats["total_events"],
             "allowed_events": stats["allowed_events"],
@@ -378,7 +388,6 @@ async def get_event_stats(
             "min_risk_score": float(stats["min_risk_score"]) if stats["min_risk_score"] else 0.0,
             "time_period_hours": hours
         }
-
     except Exception as e:
         logger.error(f"Failed to get event stats: {e}")
         raise HTTPException(

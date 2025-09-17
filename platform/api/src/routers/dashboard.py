@@ -72,7 +72,6 @@ async def get_dashboard_stats(
         """
 
         stats = await db.execute_one(stats_sql, project_id)
-
         if not stats:
             return DashboardStats(
                 total_events=0,
@@ -155,7 +154,6 @@ async def get_event_trends(
         """
 
         trends = await db.execute_query(trends_sql, project_id)
-
         return [
             EventTrend(
                 timestamp=trend["timestamp"],
@@ -209,7 +207,6 @@ async def get_top_rules(
         """
 
         rules = await db.execute_query(rules_sql, project_id, limit)
-
         return [
             TopRule(
                 rule_name=rule["rule_name"],
@@ -257,7 +254,6 @@ async def get_recent_events(
         """
 
         events = await db.execute_query(events_sql, project_id, limit)
-
         return [
             {
                 "id": event["id"],
@@ -295,7 +291,6 @@ async def get_dashboard(
         trends_task = get_event_trends(project_id, hours, 60, db)
         rules_task = get_top_rules(project_id, hours, 10, db)
         events_task = get_recent_events(project_id, 50, db)
-
         # Wait for all tasks to complete
         stats, trends, rules, events = await asyncio.gather(
             stats_task, trends_task, rules_task, events_task
