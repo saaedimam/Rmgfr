@@ -8,11 +8,13 @@
     "allowSyntheticDefaultImports": true,
     "jsx": "react-jsx",
     "lib": ["dom", "esnext"],
+    "module": "ESNext",
     "moduleResolution": "node",
     "noEmit": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "incremental": true,
+    "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
