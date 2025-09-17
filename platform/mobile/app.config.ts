@@ -2,11 +2,11 @@ import { ExpoConfig } from 'expo/config';
 const channel = process.env.RELEASE_CHANNEL || 'dev';  // dev|beta|prod
 
 const config: ExpoConfig = {
-  name: 'Sigma Iori',
-  slug: 'sigma-iori',
-  scheme: 'sigmaiori',
-  ios: { bundleIdentifier: 'com.yourco.sigmaiori' },
-  android: { package: 'com.yourco.sigmaiori' },
+  name: 'Anti-Fraud Platform',
+  slug: 'antifraud-platform',
+  scheme: 'antifraud',
+  ios: { bundleIdentifier: 'com.antifraud.platform' },
+  android: { package: 'com.antifraud.platform' },
   plugins: [
     'expo-font'
   ],

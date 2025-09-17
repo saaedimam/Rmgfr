@@ -1,4 +1,4 @@
-# Node/Expo
+# Node/Next/Expo
 node_modules/
 .next/
 dist/
@@ -6,58 +6,18 @@ build/
 .turbo/
 .expo/
 .expo-shared/
-# Python
-__pycache__/
-.env
-.venv
-# OS / misc
+coverage/
+*.log
+*.sqlite
+.tmp/
+.cache/
 .DS_Store
 .env
 .env.*
-coverage/
 .pytest_cache/
-**/__pycache__/
+__pycache__/
 .venv/
-# IDE
 .idea/
 .vscode/
-*.log
-*.sqlite
 .vercel/
-.expo/*
 !.expo/.keep
-# Logs
-*.log
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-# Coverage directory used by tools like istanbul
-coverage/
-# nyc test coverage
-.nyc_output
-# Dependency directories
-jspm_packages/
-# Optional npm cache directory
-.npm
-# Optional REPL history
-.node_repl_history
-# Output of 'npm pack'
-*.tgz
-# Yarn Integrity file
-.yarn-integrity
-# dotenv environment variables file
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-# Database
-*.db
-*.sqlite
-# Build outputs
-build/
-dist/
-# Temporary files
-tmp/
-temp/
