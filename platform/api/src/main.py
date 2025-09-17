@@ -18,7 +18,7 @@ from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 # Import routers
-from .routers import events, decisions, cases, health, analytics, replay
+from .routers import events, decisions, cases, health, analytics, replay, events_v2, dashboard
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -91,10 +91,12 @@ app.add_middleware(
 # Include routers
 app.include_router(health.router)
 app.include_router(events.router)
+app.include_router(events_v2.router)
 app.include_router(decisions.router)
 app.include_router(cases.router)
 app.include_router(analytics.router)
 app.include_router(replay.router)
+app.include_router(dashboard.router)
 
 # Pydantic models
 class ErrorResponse(BaseModel):
