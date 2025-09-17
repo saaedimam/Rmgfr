@@ -3,7 +3,7 @@ New-Item -ItemType Directory -Force -Path ".secrets_quarantine" | Out-Null
 # Simple entropy and common token scans (best-effort)
 $patterns = @(
     "api_key",
-    "secret", 
+    "secret",
     "token",
     "passwd",
     "password",
@@ -13,7 +13,7 @@ $patterns = @(
 
 $excludeExtensions = @("*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.mp4", "*.mov", "*.avi", "*.zip", "*.gz", "*.7z", "*.pdf", "*.psd")
 
-git ls-files | Where-Object { 
+git ls-files | Where-Object {
     $file = $_
     $shouldExclude = $false
     foreach ($ext in $excludeExtensions) {

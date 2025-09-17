@@ -1,0 +1,7 @@
+line-length = 100
+target-version = "py312"
+lint.select = ["E","F","I","UP","B","SIM"]
+lint.ignore = []
+[format]
+quote-style = "single"
+docstring-code-format = true

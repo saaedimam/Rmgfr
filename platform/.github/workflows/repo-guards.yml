@@ -1,0 +1,38 @@
+name: repo-guards
+on:
+  pull_request:
+    branches: ["**"]
+  push:
+    branches: ["main"]
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+      - name: Node setup
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+          cache: "pnpm"
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Big file guard
+        run: bash platform/scripts/guard-big-files.sh
+      - name: Secret scan (light)
+        run: |
+          set -euo pipefail
+          if git grep -n -E "(api_key|secret|token|passwd|password|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35})" -- . ':!platform/.secrets_quarantine' ; then
+            echo "Potential secrets found"; exit 1; fi
+      - name: Lint (JS) if web/mobile present
+        run: |
+          set -e
+          if [ -f platform/web/package.json ]; then (cd platform/web && pnpm i && pnpm -s eslint .); fi
+          if [ -f platform/mobile/package.json ]; then (cd platform/mobile && pnpm i && pnpm -s eslint .); fi
+      - name: Lint (Python) if api present
+        run: |
+          set -e
+          if [ -d platform/api ]; then (cd platform/api && python3 -m venv .venv && . .venv/bin/activate && pip install ruff && ruff check . && ruff format --check .); fi
