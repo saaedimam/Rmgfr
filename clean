@@ -1,0 +1,111 @@
+3.7 GB means the junk is still pinned in refs/reflogs/tags. We’re gonna **rewrite in a mirror**, **purge refs**, **force-push**, then **vacuum your local**. If you want one-click Cursor actions, paste this whole block:
+
+```
+cursor note "Stage 2 — Scorched-earth prune via mirror + filter-repo"
+cursor run bash <<'SH'
+set -euo pipefail
+
+# 0) Mirror the remote (rewrite in isolation so nothing lingers in your working repo)
+REPO_URL="$(git config --get remote.origin.url)"
+cd ..
+rm -rf repo.slim.git || true
+git clone --mirror "$REPO_URL" repo.slim.git
+cd repo.slim.git
+
+# 1) Ensure git-filter-repo exists (prefer binary; fallback to module)
+if ! command -v git-filter-repo >/dev/null 2>&1; then
+  python -m pip install --user --quiet git-filter-repo || pip install --user --quiet git-filter-repo
+  if command -v git-filter-repo >/dev/null 2>&1; then GFR="git-filter-repo"; else GFR="python -m git_filter_repo"; fi
+else
+  GFR="git-filter-repo"
+fi
+
+# 2) Analyze to see villains (report kept in analysis/)
+$GFR --analyze || true
+sed -n '1,40p' analysis/path-all-sizes.txt 2>/dev/null || true
+
+# 3) Rewrite ALL refs: kill >5MB blobs + heavy globs + junk folders across history
+$GFR --strip-blobs-bigger-than 5M --force
+$GFR --path-glob '*.mp4' --path-glob '*.mov' --path-glob '*.zip' --path-glob '*.7z' \
+     --path-glob '*.psd' --path-glob '*.ai' --path-glob '*.tif' --path-glob '*.webm' \
+     --path-glob '*.avi' --path-glob '*.apk' --path-glob '*.ipa' \
+     --invert-paths --force
+$GFR --path node_modules --path .next --path dist --path build --path .turbo \
+     --path .cache --path coverage --path .vercel --path .netlify \
+     --invert-paths --force
+
+# 4) Purge original refs that keep old blobs alive, then hard GC
+git for-each-ref --format='delete %(refname)' refs/original | git update-ref --stdin || true
+git reflog expire --expire=now --all
+git gc --prune=now --aggressive
+git count-objects -vH
+SH
+
+cursor note "Force push rewritten history (branches + tags)"
+cursor run bash <<'SH'
+set -e
+cd ../repo.slim.git
+git push --force --all
+git push --force --tags
+SH
+
+cursor note "Clean your working repo to actually reclaim space"
+cursor run bash <<'SH'
+set -euo pipefail
+# Go back to your original working repo dir if needed: cd ../<your-repo>
+git remote prune origin
+git fetch --all --prune
+CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+git reset --hard "origin/${CURRENT_BRANCH}"
+git for-each-ref --format='delete %(refname)' refs/original | git update-ref --stdin || true
+git reflog expire --expire=now --all
+git gc --prune=now --aggressive
+du -sh .git
+SH
+
+cursor note "Guardrail: prevent future bloat (LFS + .gitignore)"
+cursor run bash <<'SH'
+set -euo pipefail
+git lfs install || true
+git lfs track "*.mp4" "*.mov" "*.zip" "*.7z" "*.psd" "*.ai" "*.tif" "*.webm" "*.avi" "*.apk" "*.ipa" || true
+printf "%s\n" \
+"node_modules/" ".next/" "out/" "dist/" "build/" ".turbo/" ".cache/" "coverage/" \
+".vercel/" ".netlify/" ".pnpm-store/" "*.log" ".env" ".env.*" "*.sqlite*" \
+".DS_Store" "Thumbs.db" ".idea/" ".vscode/" > .gitignore
+git add .gitattributes .gitignore || true
+git commit -m "chore: LFS guardrails + strict .gitignore" || true
+git push || true
+SH
+
+cursor note "Optional: dependency trim (depcheck + prune)"
+cursor run bash <<'SH'
+set -euo pipefail
+npx depcheck || true
+npm dedupe || true
+npm prune || true
+npm cache clean --force || true
+du -sh .git
+SH
+```
+
+### If it’s STILL massive after that:
+
+You’ve got zombie refs/tags or you ran all this only in the working repo (not mirror). Do the **nuclear snapshot** (keeps ONLY current tree, deletes history):
+
+```
+# Make sure your working tree is exactly what you want to keep.
+git checkout --orphan clean-main
+git add -A
+git commit -m "snapshot: fresh start (history squashed)"
+git branch -M clean-main
+git push --force --set-upstream origin clean-main
+# (Optionally rename branch on GitHub to clean-main, or rename back to main and force push.)
+```
+
+Then re-clone lean:
+
+```
+git clone --depth=1 --filter=blob:none <repo-url>
+```
+
+That’s the hard reset. If this doesn’t cut it, you’ve got huge binaries in GitHub Releases or a different remote (not in repo size), but your `.git` will be slim.
