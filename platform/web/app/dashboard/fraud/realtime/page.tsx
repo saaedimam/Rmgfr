@@ -5,12 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Activity, 
-  Shield, 
-  AlertTriangle, 
-  CheckCircle, 
-  Clock, 
+import {
+  Activity,
+  Shield,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
   TrendingUp,
   RefreshCw,
   Play,
@@ -95,7 +95,7 @@ export default function RealtimePage() {
 
     // Simulate events every 2-5 seconds
     const eventInterval = setInterval(simulateEvent, Math.random() * 3000 + 2000);
-    
+
     // Update stats every 10 seconds
     const updateStats = async () => {
       try {
@@ -125,7 +125,7 @@ export default function RealtimePage() {
 
   const stopStreaming = () => {
     setIsStreaming(false);
-    
+
     // Clean up intervals
     if (statsIntervalRef.current) {
       clearInterval(statsIntervalRef.current);
@@ -185,9 +185,9 @@ export default function RealtimePage() {
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <Button 
-            onClick={clearEvents} 
-            variant="outline" 
+          <Button
+            onClick={clearEvents}
+            variant="outline"
             size="sm"
             disabled={events.length === 0}
           >
@@ -257,7 +257,7 @@ export default function RealtimePage() {
                 {stats.allowed_events.toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
-                {stats.total_events > 0 ? 
+                {stats.total_events > 0 ?
                   ((stats.allowed_events / stats.total_events) * 100).toFixed(1) : 0}% of total
               </p>
             </CardContent>
@@ -273,7 +273,7 @@ export default function RealtimePage() {
                 {stats.denied_events.toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
-                {stats.total_events > 0 ? 
+                {stats.total_events > 0 ?
                   ((stats.denied_events / stats.total_events) * 100).toFixed(1) : 0}% of total
               </p>
             </CardContent>
@@ -289,7 +289,7 @@ export default function RealtimePage() {
                 {stats.review_events.toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
-                {stats.total_events > 0 ? 
+                {stats.total_events > 0 ?
                   ((stats.review_events / stats.total_events) * 100).toFixed(1) : 0}% of total
               </p>
             </CardContent>

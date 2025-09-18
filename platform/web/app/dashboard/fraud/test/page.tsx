@@ -9,12 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Send, 
-  RefreshCw, 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
+import {
+  Send,
+  RefreshCw,
+  CheckCircle,
+  XCircle,
+  Clock,
   AlertTriangle,
   Activity,
   Shield
@@ -127,7 +127,7 @@ export default function FraudTestPage() {
       }
 
       const result = await response.json();
-      
+
       const eventResult: EventResult = {
         ...result,
         timestamp: new Date().toISOString()
@@ -325,8 +325,8 @@ export default function FraudTestPage() {
               />
             </div>
 
-            <Button 
-              onClick={sendTestEvent} 
+            <Button
+              onClick={sendTestEvent}
               disabled={loading}
               className="w-full"
             >
@@ -375,7 +375,7 @@ export default function FraudTestPage() {
                           {new Date(result.timestamp).toLocaleTimeString()}
                         </div>
                       </div>
-                      
+
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
                           <span className="font-medium">Risk Score:</span>

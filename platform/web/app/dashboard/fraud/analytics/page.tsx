@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import FraudNav from '@/components/FraudNav';
-import { 
-  BarChart3, 
-  TrendingUp, 
+import {
+  BarChart3,
+  TrendingUp,
   TrendingDown,
   Activity,
   Shield,
@@ -120,7 +120,7 @@ export default function AnalyticsPage() {
     <div className="space-y-6">
       {/* Navigation */}
       <FraudNav />
-      
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -179,7 +179,7 @@ export default function AnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
-                {data.total_events > 0 ? 
+                {data.total_events > 0 ?
                   ((data.allowed_events / data.total_events) * 100).toFixed(1) : 0}%
               </div>
               <p className="text-xs text-muted-foreground">
@@ -195,7 +195,7 @@ export default function AnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">
-                {data.total_events > 0 ? 
+                {data.total_events > 0 ?
                   ((data.denied_events / data.total_events) * 100).toFixed(1) : 0}%
               </div>
               <p className="text-xs text-muted-foreground">
@@ -211,7 +211,7 @@ export default function AnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-yellow-600">
-                {data.total_events > 0 ? 
+                {data.total_events > 0 ?
                   ((data.review_events / data.total_events) * 100).toFixed(1) : 0}%
               </div>
               <p className="text-xs text-muted-foreground">
@@ -239,21 +239,21 @@ export default function AnalyticsPage() {
                   {data.total_events} total events
                 </span>
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Low Risk (0.0 - 0.3)</span>
                   <span className="text-sm font-medium">
-                    {data.total_events > 0 ? 
+                    {data.total_events > 0 ?
                       Math.round((data.allowed_events / data.total_events) * 100) : 0}%
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-green-500 h-2 rounded-full" 
-                    style={{ 
-                      width: `${data.total_events > 0 ? 
-                        (data.allowed_events / data.total_events) * 100 : 0}%` 
+                  <div
+                    className="bg-green-500 h-2 rounded-full"
+                    style={{
+                      width: `${data.total_events > 0 ?
+                        (data.allowed_events / data.total_events) * 100 : 0}%`
                     }}
                   />
                 </div>
@@ -263,16 +263,16 @@ export default function AnalyticsPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Medium Risk (0.3 - 0.6)</span>
                   <span className="text-sm font-medium">
-                    {data.total_events > 0 ? 
+                    {data.total_events > 0 ?
                       Math.round(((data.total_events - data.allowed_events - data.denied_events - data.review_events) / data.total_events) * 100) : 0}%
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-yellow-500 h-2 rounded-full" 
-                    style={{ 
-                      width: `${data.total_events > 0 ? 
-                        ((data.total_events - data.allowed_events - data.denied_events - data.review_events) / data.total_events) * 100 : 0}%` 
+                  <div
+                    className="bg-yellow-500 h-2 rounded-full"
+                    style={{
+                      width: `${data.total_events > 0 ?
+                        ((data.total_events - data.allowed_events - data.denied_events - data.review_events) / data.total_events) * 100 : 0}%`
                     }}
                   />
                 </div>
@@ -282,16 +282,16 @@ export default function AnalyticsPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-sm">High Risk (0.6 - 0.8)</span>
                   <span className="text-sm font-medium">
-                    {data.total_events > 0 ? 
+                    {data.total_events > 0 ?
                       Math.round((data.review_events / data.total_events) * 100) : 0}%
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-orange-500 h-2 rounded-full" 
-                    style={{ 
-                      width: `${data.total_events > 0 ? 
-                        (data.review_events / data.total_events) * 100 : 0}%` 
+                  <div
+                    className="bg-orange-500 h-2 rounded-full"
+                    style={{
+                      width: `${data.total_events > 0 ?
+                        (data.review_events / data.total_events) * 100 : 0}%`
                     }}
                   />
                 </div>
@@ -301,16 +301,16 @@ export default function AnalyticsPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Critical Risk (0.8 - 1.0)</span>
                   <span className="text-sm font-medium">
-                    {data.total_events > 0 ? 
+                    {data.total_events > 0 ?
                       Math.round((data.denied_events / data.total_events) * 100) : 0}%
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-red-500 h-2 rounded-full" 
-                    style={{ 
-                      width: `${data.total_events > 0 ? 
-                        (data.denied_events / data.total_events) * 100 : 0}%` 
+                  <div
+                    className="bg-red-500 h-2 rounded-full"
+                    style={{
+                      width: `${data.total_events > 0 ?
+                        (data.denied_events / data.total_events) * 100 : 0}%`
                     }}
                   />
                 </div>

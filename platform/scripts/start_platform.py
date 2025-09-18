@@ -17,11 +17,11 @@ class PlatformManager:
         self.processes: List[subprocess.Popen] = []
         self.base_url = "http://localhost:8000"
         self.web_url = "http://localhost:3000"
-    
+
     def start_api_server(self):
         """Start the FastAPI server"""
         print("🚀 Starting API server...")
-        
+
         api_dir = Path(__file__).parent.parent / "api"
         process = subprocess.Popen(
             [sys.executable, "-m", "uvicorn", "src.main:app", "--reload", "--port", "8000"],
@@ -29,15 +29,15 @@ class PlatformManager:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
-        
+
         self.processes.append(process)
         print(f"✅ API server started with PID: {process.pid}")
         return process
-    
+
     def start_web_server(self):
         """Start the Next.js web server"""
         print("🌐 Starting web server...")
-        
+
         web_dir = Path(__file__).parent.parent / "web"
         process = subprocess.Popen(
             ["npm", "run", "dev"],
@@ -45,15 +45,15 @@ class PlatformManager:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
-        
+
         self.processes.append(process)
         print(f"✅ Web server started with PID: {process.pid}")
         return process
-    
+
     async def wait_for_service(self, url: str, name: str, max_wait: int = 30):
         """Wait for a service to be ready"""
         print(f"⏳ Waiting for {name} to be ready...")
-        
+
         start_time = time.time()
         while time.time() - start_time < max_wait:
             try:
@@ -64,17 +64,17 @@ class PlatformManager:
                             return True
             except:
                 pass
-            
+
             time.sleep(1)
             print(".", end="", flush=True)
-        
+
         print(f"\n❌ {name} not ready after {max_wait} seconds")
         return False
-    
+
     async def test_api_endpoints(self):
         """Test API endpoints"""
         print("\n🧪 Testing API endpoints...")
-        
+
         test_cases = [
             ("/health", "Health check"),
             ("/health/database", "Database health"),
@@ -82,7 +82,7 @@ class PlatformManager:
             ("/v1/dashboard/stats", "Dashboard stats"),
             ("/v1/replay/worker/status", "Replay worker")
         ]
-        
+
         async with aiohttp.ClientSession() as session:
             for endpoint, description in test_cases:
                 try:
@@ -109,11 +109,11 @@ class PlatformManager:
                                 print(f"❌ {description}: {response.status}")
                 except Exception as e:
                     print(f"❌ {description}: {e}")
-    
+
     async def test_web_endpoints(self):
         """Test web endpoints"""
         print("\n🌐 Testing web endpoints...")
-        
+
         test_cases = [
             ("/", "Home page"),
             ("/dashboard/fraud", "Fraud dashboard"),
@@ -122,7 +122,7 @@ class PlatformManager:
             ("/dashboard/fraud/analytics", "Analytics"),
             ("/dashboard/fraud/settings", "Settings")
         ]
-        
+
         async with aiohttp.ClientSession() as session:
             for endpoint, description in test_cases:
                 try:
@@ -134,11 +134,11 @@ class PlatformManager:
                             print(f"❌ {description}: {response.status}")
                 except Exception as e:
                     print(f"❌ {description}: {e}")
-    
+
     async def run_demo_events(self):
         """Run demo events"""
         print("\n🎯 Running demo events...")
-        
+
         demo_events = [
             {
                 "event_type": "login",
@@ -164,7 +164,7 @@ class PlatformManager:
                 "ip_address": "198.51.100.1"
             }
         ]
-        
+
         async with aiohttp.ClientSession() as session:
             for i, event in enumerate(demo_events, 1):
                 try:
@@ -176,13 +176,13 @@ class PlatformManager:
                             print(f"❌ Event {i}: {event['event_type']} - HTTP {response.status}")
                 except Exception as e:
                     print(f"❌ Event {i}: {e}")
-                
+
                 await asyncio.sleep(0.5)  # Small delay between events
-    
+
     def cleanup(self):
         """Clean up all processes"""
         print("\n🧹 Cleaning up...")
-        
+
         for process in self.processes:
             try:
                 process.terminate()
@@ -193,30 +193,30 @@ class PlatformManager:
                 print(f"⚠️  Process {process.pid} force killed")
             except Exception as e:
                 print(f"❌ Error stopping process {process.pid}: {e}")
-    
+
     async def run(self):
         """Run the complete platform"""
         print("🎯 Anti-Fraud Platform Startup")
         print("=" * 40)
-        
+
         try:
             # Start services
             self.start_api_server()
             self.start_web_server()
-            
+
             # Wait for services to be ready
             api_ready = await self.wait_for_service(f"{self.base_url}/health", "API Server")
             web_ready = await self.wait_for_service(f"{self.web_url}", "Web Server")
-            
+
             if not api_ready or not web_ready:
                 print("❌ Failed to start services")
                 return 1
-            
+
             # Run tests
             await self.test_api_endpoints()
             await self.test_web_endpoints()
             await self.run_demo_events()
-            
+
             print("\n" + "=" * 40)
             print("✅ Platform is running successfully!")
             print("=" * 40)
@@ -224,20 +224,20 @@ class PlatformManager:
             print(f"🔌 API Server: {self.base_url}")
             print(f"📊 API Docs: {self.base_url}/docs")
             print("\nPress Ctrl+C to stop all services")
-            
+
             # Keep running until interrupted
             try:
                 while True:
                     await asyncio.sleep(1)
             except KeyboardInterrupt:
                 print("\n🛑 Shutting down...")
-            
+
             return 0
-            
+
         except Exception as e:
             print(f"❌ Error: {e}")
             return 1
-        
+
         finally:
             self.cleanup()
 

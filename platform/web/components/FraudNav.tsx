@@ -3,11 +3,11 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { 
-  Shield, 
-  Activity, 
-  TestTube, 
-  BarChart3, 
+import {
+  Shield,
+  Activity,
+  TestTube,
+  BarChart3,
   Settings,
   Home
 } from 'lucide-react';

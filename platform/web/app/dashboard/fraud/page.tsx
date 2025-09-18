@@ -7,12 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Activity, 
-  Shield, 
-  AlertTriangle, 
-  CheckCircle, 
-  Clock, 
+import {
+  Activity,
+  Shield,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
   TrendingUp,
   Users,
   DollarSign,
@@ -111,7 +111,7 @@ export default function FraudDashboard() {
 
   useEffect(() => {
     fetchDashboardData();
-    
+
     // Set up auto-refresh every 30 seconds
     const interval = setInterval(fetchDashboardData, 30000);
     return () => clearInterval(interval);
@@ -155,7 +155,7 @@ export default function FraudDashboard() {
     <div className="space-y-6">
       {/* Navigation */}
       <FraudNav />
-      
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -165,8 +165,8 @@ export default function FraudDashboard() {
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <Button 
-            onClick={fetchDashboardData} 
+          <Button
+            onClick={fetchDashboardData}
             disabled={loading}
             variant="outline"
             size="sm"
@@ -214,7 +214,7 @@ export default function FraudDashboard() {
                 {stats.allowed_events.toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
-                {stats.total_events > 0 ? 
+                {stats.total_events > 0 ?
                   ((stats.allowed_events / stats.total_events) * 100).toFixed(1) : 0}% of total
               </p>
             </CardContent>
@@ -230,7 +230,7 @@ export default function FraudDashboard() {
                 {stats.denied_events.toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
-                {stats.total_events > 0 ? 
+                {stats.total_events > 0 ?
                   ((stats.denied_events / stats.total_events) * 100).toFixed(1) : 0}% of total
               </p>
             </CardContent>
@@ -246,7 +246,7 @@ export default function FraudDashboard() {
                 {stats.review_events.toLocaleString()}
               </div>
               <p className="text-xs text-muted-foreground">
-                {stats.total_events > 0 ? 
+                {stats.total_events > 0 ?
                   ((stats.review_events / stats.total_events) * 100).toFixed(1) : 0}% of total
               </p>
             </CardContent>

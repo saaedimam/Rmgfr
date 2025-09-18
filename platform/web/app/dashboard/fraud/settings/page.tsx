@@ -11,10 +11,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import FraudNav from '@/components/FraudNav';
-import { 
-  Settings, 
-  Save, 
-  RefreshCw, 
+import {
+  Settings,
+  Save,
+  RefreshCw,
   AlertTriangle,
   Shield,
   Activity,
@@ -116,11 +116,11 @@ export default function SettingsPage() {
       const newSettings = { ...prev };
       const keys = path.split('.');
       let current = newSettings;
-      
+
       for (let i = 0; i < keys.length - 1; i++) {
         current = current[keys[i]];
       }
-      
+
       current[keys[keys.length - 1]] = value;
       return newSettings;
     });
@@ -134,7 +134,7 @@ export default function SettingsPage() {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       setSuccess('Settings saved successfully!');
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
@@ -193,7 +193,7 @@ export default function SettingsPage() {
     <div className="space-y-6">
       {/* Navigation */}
       <FraudNav />
-      
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -413,7 +413,7 @@ export default function SettingsPage() {
               />
             </div>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div>
               <Label htmlFor="round_number_detection">Detect Round Numbers</Label>
@@ -455,7 +455,7 @@ export default function SettingsPage() {
               onCheckedChange={(checked) => handleSettingChange('device_settings.enable_fingerprinting', checked)}
             />
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div>
               <Label htmlFor="enable_user_agent_analysis">Enable User Agent Analysis</Label>
@@ -469,7 +469,7 @@ export default function SettingsPage() {
               onCheckedChange={(checked) => handleSettingChange('device_settings.enable_user_agent_analysis', checked)}
             />
           </div>
-          
+
           <div>
             <Label htmlFor="suspicious_patterns">Suspicious User Agent Patterns</Label>
             <Textarea
@@ -511,7 +511,7 @@ export default function SettingsPage() {
               onCheckedChange={(checked) => handleSettingChange('notification_settings.email_alerts', checked)}
             />
           </div>
-          
+
           <div>
             <Label htmlFor="webhook_url">Webhook URL</Label>
             <Input
@@ -525,7 +525,7 @@ export default function SettingsPage() {
               URL to send webhook notifications
             </p>
           </div>
-          
+
           <div>
             <Label htmlFor="alert_threshold">Alert Threshold</Label>
             <Input
