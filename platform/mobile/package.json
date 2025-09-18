@@ -13,6 +13,7 @@
     "submit:ios": "eas submit --platform ios"
   },
   "dependencies": {
+    "@antifraud/shared": "workspace:*",
     "@expo/vector-icons": "^14.0.0",
     "@react-navigation/native": "^6.1.9",
     "@react-navigation/stack": "^6.3.20",

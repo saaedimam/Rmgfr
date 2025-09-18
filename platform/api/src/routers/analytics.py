@@ -10,9 +10,9 @@ from datetime import datetime, timedelta
 import json
 
 from ..models.database import get_db, Event, Decision, Profile
-from ...advanced_analytics import analytics_engine
-from ...real_time_dashboard import dashboard
-from ...performance_monitor import performance_monitor
+# from ...advanced_analytics import analytics_engine
+# from ...real_time_dashboard import dashboard
+# from ...performance_monitor import performance_monitor
 
 router = APIRouter(prefix="/v1/analytics", tags=["analytics"])
 
@@ -33,7 +33,7 @@ async def get_dashboard_data(
             ).order_by(desc(Event.created_at)).limit(1000)
         )
         events = events_result.scalars().all()
-        
+
         decisions_result = await db.execute(
             select(Decision).where(
                 and_(
@@ -43,7 +43,7 @@ async def get_dashboard_data(
             ).order_by(desc(Decision.created_at)).limit(1000)
         )
         decisions = decisions_result.scalars().all()
-        
+
         # Convert to dict format
         events_data = [
             {
@@ -59,7 +59,7 @@ async def get_dashboard_data(
             }
             for event in events
         ]
-        
+
         decisions_data = [
             {
                 "id": str(decision.id),
@@ -70,20 +70,20 @@ async def get_dashboard_data(
             }
             for decision in decisions
         ]
-        
+
         # Update dashboard metrics
         await dashboard.update_metrics(events_data, decisions_data)
-        
+
         # Get dashboard data
         dashboard_data = await dashboard.get_dashboard_data()
         alerts = await dashboard.get_alerts()
-        
+
         return {
             "dashboard": dashboard_data,
             "alerts": alerts,
             "timestamp": datetime.utcnow().isoformat()
         }
-        
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -109,7 +109,7 @@ async def get_fraud_patterns(
             ).order_by(desc(Event.created_at))
         )
         events = events_result.scalars().all()
-        
+
         # Convert to dict format
         events_data = [
             {
@@ -124,10 +124,10 @@ async def get_fraud_patterns(
             }
             for event in events
         ]
-        
+
         # Analyze fraud patterns
         patterns = await analytics_engine.analyze_fraud_patterns(events_data)
-        
+
         return {
             "patterns": [
                 {
@@ -145,7 +145,7 @@ async def get_fraud_patterns(
             "analysis_period_hours": hours,
             "total_events_analyzed": len(events_data)
         }
-        
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -171,7 +171,7 @@ async def get_user_profiles(
             ).order_by(desc(Event.created_at)).limit(5000)
         )
         events = events_result.scalars().all()
-        
+
         # Convert to dict format
         events_data = [
             {
@@ -185,13 +185,13 @@ async def get_user_profiles(
             }
             for event in events
         ]
-        
+
         # Get unique user IDs
         if user_id:
             user_ids = [user_id]
         else:
             user_ids = list(set(e['user_id'] for e in events_data if e['user_id']))
-        
+
         # Build profiles for each user
         profiles = []
         for uid in user_ids[:limit]:
@@ -208,13 +208,13 @@ async def get_user_profiles(
                 "device_diversity": profile.device_diversity,
                 "location_diversity": profile.location_diversity
             })
-        
+
         return {
             "profiles": profiles,
             "total_profiles": len(profiles),
             "analysis_period_days": 30
         }
-        
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -240,7 +240,7 @@ async def get_risk_insights(
             ).order_by(desc(Event.created_at))
         )
         events = events_result.scalars().all()
-        
+
         # Convert to dict format
         events_data = [
             {
@@ -255,12 +255,12 @@ async def get_risk_insights(
             }
             for event in events
         ]
-        
+
         # Generate insights
         insights = await analytics_engine.generate_risk_insights(events_data)
-        
+
         return insights
-        
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -273,16 +273,16 @@ async def get_performance_metrics():
     try:
         # Collect current metrics
         metrics = performance_monitor.collect_system_metrics()
-        
+
         if not metrics:
             return {"message": "Unable to collect performance metrics"}
-        
+
         # Get health status
         health_status = performance_monitor.get_health_status()
-        
+
         # Get performance summary
         performance_summary = performance_monitor.get_performance_summary()
-        
+
         return {
             "current_metrics": {
                 "timestamp": metrics.timestamp.isoformat(),
@@ -302,7 +302,7 @@ async def get_performance_metrics():
             "health_status": health_status,
             "performance_summary": performance_summary
         }
-        
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

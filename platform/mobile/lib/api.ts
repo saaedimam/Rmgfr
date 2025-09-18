@@ -2,29 +2,20 @@
  * API client for Anti-Fraud Mobile app
  */
 
+import {
+  EventResponse,
+  DecisionAction,
+  EventCreate,
+  ApiClientConfig,
+  ApiRequestOptions
+} from '@antifraud/shared';
+
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
 
-export interface Event {
-  id: string;
-  event_type: string;
-  event_data: Record<string, any>;
-  profile_id?: string;
-  session_id?: string;
-  device_fingerprint?: string;
-  created_at: string;
-}
-
-export interface Decision {
-  id: string;
-  event_id?: string;
-  profile_id?: string;
-  decision: 'allow' | 'deny' | 'review';
-  risk_score?: number;
-  reasons: string[];
-  rules_fired: string[];
-  metadata: Record<string, any>;
-  created_at: string;
-}
+// Re-export shared types for convenience
+export type Event = EventResponse;
+export type EventCreateData = EventCreate;
+export type Decision = DecisionAction;
 
 export interface Case {
   id: string;
@@ -51,7 +42,7 @@ class ApiClient {
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
-    
+
     const response = await fetch(url, {
       ...options,
       headers: {
@@ -68,7 +59,7 @@ class ApiClient {
   }
 
   // Events API
-  async createEvent(eventData: Omit<Event, 'id' | 'created_at'>): Promise<Event> {
+  async createEvent(eventData: EventCreateData): Promise<Event> {
     return this.request<Event>(`/v1/events/?project_id=${this.projectId}`, {
       method: 'POST',
       body: JSON.stringify(eventData),
@@ -87,7 +78,7 @@ class ApiClient {
       limit: limit.toString(),
       ...(eventType && { event_type: eventType }),
     });
-    
+
     return this.request(`/v1/events/?${params}`);
   }
 
@@ -111,7 +102,7 @@ class ApiClient {
       limit: limit.toString(),
       ...(decision && { decision }),
     });
-    
+
     return this.request(`/v1/decisions/?${params}`);
   }
 
@@ -128,7 +119,7 @@ class ApiClient {
       limit: limit.toString(),
       ...(status && { status }),
     });
-    
+
     return this.request(`/v1/cases/?${params}`);
   }
 

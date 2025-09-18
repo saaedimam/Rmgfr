@@ -3,34 +3,22 @@
  * Implements the core decision logic for fraud detection
  */
 
-export enum Action {
-  ALLOW = 'allow',
-  DENY = 'deny',
-  REVIEW = 'review',
-  STEP_UP = 'step_up'
-}
+import {
+  DecisionAction,
+  DecisionMatrix,
+  DecisionContext,
+  DecisionResult,
+  RiskBand
+} from '@antifraud/shared';
 
-export interface DecisionMatrix {
-  event_type: string;
-  risk_band: string;
-  customer_segment: string;
-  action: Action;
-  max_fpr: number;
-  notes: string;
-}
+export const Action = {
+  ALLOW: 'allow' as const,
+  DENY: 'deny' as const,
+  REVIEW: 'review' as const,
+  STEP_UP: 'step_up' as const
+} as const;
 
-export interface DecisionContext {
-  event_type: string;
-  risk_score: number;
-  customer_segment: string;
-  latest_fpr: number;
-}
-
-export interface DecisionResult {
-  action: Action;
-  confidence: number;
-  reasons: string[];
-}
+export type Action = DecisionAction;
 
 export class DecisionGate {
   private decisionMatrix: Map<string, DecisionMatrix> = new Map();
@@ -45,14 +33,14 @@ export class DecisionGate {
     // TODO: Load from API
   }
 
-  private getRiskBand(riskScore: number): string {
+  private getRiskBand(riskScore: number): RiskBand {
     if (riskScore < 0.3) return 'low';
     if (riskScore < 0.6) return 'med';
     if (riskScore < 0.8) return 'high';
     return 'critical';
   }
 
-  private getMatrixKey(eventType: string, riskBand: string, customerSegment: string): string {
+  private getMatrixKey(eventType: string, riskBand: RiskBand, customerSegment: string): string {
     return `${eventType}:${riskBand}:${customerSegment}`;
   }
 
@@ -66,14 +54,14 @@ export class DecisionGate {
     try {
       // Get risk band from risk score
       const riskBand = this.getRiskBand(context.risk_score);
-      
+
       // Generate matrix key
       const matrixKey = this.getMatrixKey(
         context.event_type,
         riskBand,
         context.customer_segment
       );
-      
+
       // Use provided matrix or default
       let matrixEntry: DecisionMatrix;
       if (matrixMap && matrixMap.has(matrixKey)) {
@@ -82,11 +70,11 @@ export class DecisionGate {
         // Fallback to default decision matrix
         matrixEntry = this.getDefaultDecision(context.event_type, riskBand, context.customer_segment);
       }
-      
+
       // Extract action and max FPR
       const action = matrixEntry.action;
       const maxFpr = matrixEntry.max_fpr;
-      
+
       // Check if current FPR exceeds threshold
       if (context.latest_fpr > maxFpr) {
         // FPR too high, escalate to review
@@ -112,7 +100,7 @@ export class DecisionGate {
           ]
         };
       }
-      
+
     } catch (error) {
       console.error('Error in decision gate:', error);
       // Fail safe to review
@@ -124,7 +112,7 @@ export class DecisionGate {
     }
   }
 
-  private getDefaultDecision(eventType: string, riskBand: string, customerSegment: string): DecisionMatrix {
+  private getDefaultDecision(eventType: string, riskBand: RiskBand, customerSegment: string): DecisionMatrix {
     // Default decision matrix based on risk level
     const defaults: Record<string, Partial<DecisionMatrix>> = {
       low: { action: Action.ALLOW, max_fpr: 0.01 },
@@ -132,9 +120,9 @@ export class DecisionGate {
       high: { action: Action.REVIEW, max_fpr: 0.005 },
       critical: { action: Action.DENY, max_fpr: 0.002 }
     };
-    
+
     const defaultEntry = defaults[riskBand] || { action: Action.REVIEW, max_fpr: 0.01 };
-    
+
     return {
       event_type: eventType,
       risk_band: riskBand,
@@ -150,17 +138,17 @@ export class DecisionGate {
    */
   updateMatrix(matrixData: DecisionMatrix[]): void {
     console.log(`Updating decision matrix with ${matrixData.length} entries`);
-    
+
     for (const entry of matrixData) {
       const key = this.getMatrixKey(
         entry.event_type,
         entry.risk_band,
         entry.customer_segment
       );
-      
+
       this.decisionMatrix.set(key, entry);
     }
-    
+
     console.log('Decision matrix updated successfully');
   }
 

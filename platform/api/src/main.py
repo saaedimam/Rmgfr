@@ -75,17 +75,19 @@ app = FastAPI(
 )
 
 # Add middleware
+cors_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,https://*.vercel.app").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://*.vercel.app"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+trusted_hosts = os.getenv("TRUSTED_HOSTS", "localhost,*.vercel.app,*.supabase.co,*.railway.app").split(",")
 app.add_middleware(
     TrustedHostMiddleware,
-    allowed_hosts=["localhost", "*.vercel.app", "*.supabase.co"]
+    allowed_hosts=trusted_hosts
 )
 
 # Include routers
