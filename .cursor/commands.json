@@ -1,0 +1,207 @@
+{
+  "commands": [
+    {
+      "command": "dev",
+      "title": "🚀 Start Development Environment",
+      "description": "Start all services (web, api, mobile) in development mode",
+      "args": [],
+      "script": "npm run dev"
+    },
+    {
+      "command": "dev:web",
+      "title": "🌐 Start Web App Only",
+      "description": "Start Next.js web application on localhost:3000",
+      "args": [],
+      "script": "cd platform && npm run dev:web"
+    },
+    {
+      "command": "dev:api",
+      "title": "🔧 Start API Server Only",
+      "description": "Start FastAPI server on localhost:8000",
+      "args": [],
+      "script": "cd platform && npm run dev:api"
+    },
+    {
+      "command": "dev:mobile",
+      "title": "📱 Start Mobile App Only",
+      "description": "Start Expo development server for mobile app",
+      "args": [],
+      "script": "cd platform && npm run dev:mobile"
+    },
+    {
+      "command": "test",
+      "title": "🧪 Run All Tests",
+      "description": "Run unit tests, e2e tests, and API tests",
+      "args": [],
+      "script": "npm run test"
+    },
+    {
+      "command": "test:unit",
+      "title": "🔬 Run Unit Tests",
+      "description": "Run Python unit tests for API",
+      "args": [],
+      "script": "cd platform/api && python -m pytest tests/ -v"
+    },
+    {
+      "command": "test:e2e",
+      "title": "🎭 Run E2E Tests",
+      "description": "Run Playwright end-to-end tests",
+      "args": [],
+      "script": "npx playwright test"
+    },
+    {
+      "command": "test:e2e:ui",
+      "title": "🎭 Run E2E Tests (UI Mode)",
+      "description": "Run Playwright tests with interactive UI",
+      "args": [],
+      "script": "npx playwright test --ui"
+    },
+    {
+      "command": "lint",
+      "title": "🔍 Lint All Code",
+      "description": "Run ESLint and Python linting on all code",
+      "args": [],
+      "script": "npm run lint"
+    },
+    {
+      "command": "format",
+      "title": "✨ Format All Code",
+      "description": "Format TypeScript, Python, and other code files",
+      "args": [],
+      "script": "npm run format"
+    },
+    {
+      "command": "build",
+      "title": "🏗️ Build All Services",
+      "description": "Build web app and API for production",
+      "args": [],
+      "script": "npm run build"
+    },
+    {
+      "command": "install:all",
+      "title": "📦 Install All Dependencies",
+      "description": "Install dependencies for all services (web, api, mobile)",
+      "args": [],
+      "script": "npm run install:all"
+    },
+    {
+      "command": "setup:db",
+      "title": "🗄️ Setup Database",
+      "description": "Run database migrations and seed data",
+      "args": [],
+      "script": "npm run setup:db"
+    },
+    {
+      "command": "docker:up",
+      "title": "🐳 Start Docker Services",
+      "description": "Start all services using Docker Compose",
+      "args": [],
+      "script": "npm run docker:up"
+    },
+    {
+      "command": "docker:down",
+      "title": "🐳 Stop Docker Services",
+      "description": "Stop all Docker Compose services",
+      "args": [],
+      "script": "npm run docker:down"
+    },
+    {
+      "command": "deploy:web",
+      "title": "🚀 Deploy Web to Vercel",
+      "description": "Deploy web application to Vercel production",
+      "args": [],
+      "script": "cd platform && npm run deploy:web"
+    },
+    {
+      "command": "deploy:api",
+      "title": "🚀 Deploy API to Railway",
+      "description": "Deploy API to Railway production",
+      "args": [],
+      "script": "cd platform && npm run deploy:api"
+    },
+    {
+      "command": "deploy:railway",
+      "title": "🚂 Deploy to Railway",
+      "description": "Deploy entire platform to Railway",
+      "args": [],
+      "script": "cd platform && npm run deploy:railway"
+    },
+    {
+      "command": "db:migrate",
+      "title": "📊 Run Database Migrations",
+      "description": "Apply database migrations to Supabase",
+      "args": [],
+      "script": "make db-migrate"
+    },
+    {
+      "command": "db:rollback",
+      "title": "↩️ Rollback Database Migration",
+      "description": "Rollback the latest database migration",
+      "args": [],
+      "script": "make db-rollback-002"
+    },
+    {
+      "command": "load:test",
+      "title": "⚡ Run Load Tests",
+      "description": "Run k6 load tests to verify performance",
+      "args": [],
+      "script": "make load-smoke"
+    },
+    {
+      "command": "env:check",
+      "title": "🔐 Check Environment Variables",
+      "description": "Verify all required environment variables are set",
+      "args": [],
+      "script": "cd platform && npm run env:check"
+    },
+    {
+      "command": "env:push",
+      "title": "📤 Push Environment Variables",
+      "description": "Push environment variables to deployment platform",
+      "args": [],
+      "script": "cd platform && npm run env:push"
+    },
+    {
+      "command": "verify:deployment",
+      "title": "✅ Verify Deployment",
+      "description": "Verify that deployment is working correctly",
+      "args": [],
+      "script": "cd platform && npm run verify:deployment"
+    },
+    {
+      "command": "db:seed",
+      "title": "🌱 Seed Database",
+      "description": "Seed database with sample data for development",
+      "args": [],
+      "script": "cd platform && npm run db:seed:railway"
+    },
+    {
+      "command": "type-check",
+      "title": "🔍 Type Check TypeScript",
+      "description": "Run TypeScript type checking on web app",
+      "args": [],
+      "script": "cd platform/web && npm run type-check"
+    },
+    {
+      "command": "test:coverage",
+      "title": "📊 Run Tests with Coverage",
+      "description": "Run tests and generate coverage reports",
+      "args": [],
+      "script": "npm run test:coverage"
+    },
+    {
+      "command": "quick-start",
+      "title": "⚡ Quick Start Setup",
+      "description": "Run the quick start script for initial setup",
+      "args": [],
+      "script": "./scripts/quick-start.sh"
+    },
+    {
+      "command": "health:check",
+      "title": "🏥 Health Check",
+      "description": "Check health of all services",
+      "args": [],
+      "script": "./scripts/health.ps1"
+    }
+  ]
+}

@@ -1,0 +1,300 @@
+# Anti-Fraud Platform Development Rules
+
+## 🏗️ Architecture & Tech Stack
+- **Web**: Next.js 14 + TypeScript (App Router/RSC) on Vercel
+- **API**: FastAPI (Python 3.12) on Railway
+- **Database**: Postgres (Supabase) with RLS
+- **Cache**: Redis (optional)
+- **Auth**: Clerk
+- **Mobile**: Expo + React Native (EAS)
+- **CI/CD**: GitHub Actions
+- **Observability**: Sentry + basic OpenTelemetry
+
+## 🔧 Development Standards
+
+### TypeScript Rules
+- Use strict TypeScript configuration
+- NO `any` types allowed - use proper typing
+- Prefer interfaces over types for object shapes
+- Use Zod for runtime validation
+- All API responses must be typed
+
+### Python Rules
+- Use Pydantic v2 for all data models
+- Prefer async/await over sync operations
+- Use type hints for all function parameters and returns
+- Follow PEP 8 with Black formatting
+- Use isort for import organization
+
+### Security Rules
+- Enforce Row Level Security (RLS) on ALL database tables
+- Never leak secrets in logs or error messages
+- Implement OWASP Top 10 mitigations
+- Use API key authentication for all endpoints
+- Validate all inputs with Pydantic/Zod schemas
+- Implement rate limiting on all public endpoints
+
+### Testing Rules
+- Write failing tests BEFORE implementing features
+- Maintain test commands in package.json scripts
+- Unit tests for all business logic
+- E2E tests for critical user flows
+- API tests for all endpoints
+- Test coverage should be >80%
+
+### Performance Rules
+- API p99.9 latency < 400ms
+- Web LCP < 2.5s
+- Mobile cold start < 3s
+- Use Redis for caching when appropriate
+- Implement database connection pooling
+- Use async operations for I/O
+
+## 📁 Project Structure
+
+### Web App (`platform/web/`)
+- Use Next.js App Router with RSC
+- Components in `src/components/`
+- Pages in `app/` directory
+- Shared types in `packages/shared/`
+- Use Tailwind CSS for styling
+- Implement proper error boundaries
+
+### API (`platform/api/`)
+- FastAPI with async/await
+- Models in `src/models/`
+- Routes in `src/routes/`
+- Database migrations in `infra/db/`
+- Tests in `tests/`
+- Use Alembic for migrations
+
+### Mobile (`platform/mobile/`)
+- Expo + React Native
+- Use TypeScript
+- Implement proper navigation
+- Use shared API client from `packages/shared/`
+
+## 🚀 Deployment Rules
+
+### Environment Management
+- Use `.env.example` files for all services
+- Never commit `.env` files
+- Use environment-specific configurations
+- Validate all required env vars on startup
+
+### Database Rules
+- All migrations must be reversible
+- Use transactions for multi-table operations
+- Implement proper RLS policies
+- Backup before major schema changes
+- Provide rollback commands for risky migrations
+
+### API Rules
+- Version all APIs (`/v1/`, `/v2/`, etc.)
+- Use proper HTTP status codes
+- Implement idempotency where appropriate
+- Add request/response logging
+- Use structured logging (JSON)
+
+## 🧪 Testing Rules
+
+### Unit Tests
+- Test business logic in isolation
+- Mock external dependencies
+- Use descriptive test names
+- Test both success and failure cases
+- Maintain test data fixtures
+
+### Integration Tests
+- Test API endpoints with real database
+- Test authentication flows
+- Test error handling
+- Use test database for integration tests
+
+### E2E Tests
+- Test critical user journeys
+- Use Playwright for web testing
+- Test mobile flows on real devices
+- Implement proper test data setup/teardown
+
+## 📊 Monitoring Rules
+
+### Observability
+- Use Sentry for error tracking
+- Implement basic OpenTelemetry
+- Add health check endpoints
+- Monitor key performance metrics
+- Set up alerting for critical failures
+
+### Logging
+- Use structured logging (JSON)
+- Include correlation IDs
+- Log all API requests/responses
+- Don't log sensitive data
+- Use appropriate log levels
+
+## 🔄 Code Quality Rules
+
+### Git Workflow
+- Use feature branches
+- Write descriptive commit messages
+- Use conventional commits format
+- Require PR reviews
+- Run all tests before merging
+
+### Code Review
+- Review for security vulnerabilities
+- Check performance implications
+- Verify test coverage
+- Ensure proper error handling
+- Validate documentation updates
+
+### Documentation
+- Keep README files updated
+- Document API endpoints
+- Include setup instructions
+- Document environment variables
+- Keep architecture decisions in ADRs
+
+## 🚨 Error Handling Rules
+
+### API Errors
+- Use proper HTTP status codes
+- Return structured error responses
+- Don't expose internal errors to clients
+- Log errors with context
+- Implement retry logic where appropriate
+
+### Frontend Errors
+- Use error boundaries
+- Show user-friendly error messages
+- Implement proper loading states
+- Handle network failures gracefully
+- Log errors to monitoring service
+
+## 🔐 Security Rules
+
+### Authentication
+- Use Clerk for user authentication
+- Implement proper session management
+- Use secure cookies
+- Implement logout functionality
+- Validate tokens on every request
+
+### Authorization
+- Implement role-based access control
+- Use RLS for database access
+- Validate permissions on every endpoint
+- Implement audit logging
+- Regular security audits
+
+### Data Protection
+- Encrypt sensitive data at rest
+- Use HTTPS everywhere
+- Implement proper CORS policies
+- Sanitize all user inputs
+- Regular dependency updates
+
+## 📈 Performance Rules
+
+### Database
+- Use proper indexing
+- Implement connection pooling
+- Use read replicas where appropriate
+- Monitor query performance
+- Implement query caching
+
+### Frontend
+- Use code splitting
+- Implement lazy loading
+- Optimize images
+- Use CDN for static assets
+- Monitor Core Web Vitals
+
+### API
+- Use async operations
+- Implement caching strategies
+- Use connection pooling
+- Monitor response times
+- Implement circuit breakers
+
+## 🎯 MVP Focus Areas
+
+### Core Features (Must Have)
+- Real-time transaction scoring
+- Fraud case management
+- Policy configuration
+- Analytics dashboard
+- REST API for integration
+
+### Fraud Detection Rules
+- Rate limiting (IP, user, device)
+- Velocity checks
+- Device fingerprinting
+- Custom rule engine
+- Risk scoring (0-1 scale)
+
+### Dashboard Features
+- Real-time event monitoring
+- Decision timeline
+- Case queue management
+- Rule performance analytics
+- Risk score visualization
+
+## 🚀 Quick Commands Reference
+
+```bash
+# Development
+npm run dev              # Start all services
+npm run dev:web          # Web only
+npm run dev:api          # API only
+npm run dev:mobile       # Mobile only
+
+# Testing
+npm test                 # All tests
+npm run test:unit        # Unit tests
+npm run test:e2e         # E2E tests
+
+# Quality
+npm run lint             # Lint all code
+npm run format           # Format all code
+npm run type-check       # TypeScript check
+
+# Database
+make db-migrate          # Run migrations
+make db-rollback         # Rollback migration
+npm run setup:db         # Setup database
+
+# Deployment
+npm run deploy:web       # Deploy web
+npm run deploy:api       # Deploy API
+npm run deploy:railway   # Deploy to Railway
+```
+
+## 🆘 Emergency Procedures
+
+### Rollback Commands
+```bash
+# Database rollback
+make db-rollback-002
+
+# API rollback (Railway)
+railway rollback
+
+# Web rollback (Vercel)
+vercel rollback
+```
+
+### Health Checks
+```bash
+# Check all services
+npm run health:check
+
+# Verify deployment
+npm run verify:deployment
+
+# Load test
+make load-smoke
+```
+
+Remember: When in doubt, ask at most 3 questions if critical info is missing. Otherwise, proceed with safe defaults and document assumptions at the top of PRs.
