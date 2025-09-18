@@ -1,0 +1,25 @@
+{
+  "name": "@antifraud/shared",
+  "version": "1.0.0",
+  "description": "Shared types and utilities for Anti-Fraud Platform",
+  "main": "api-types/index.ts",
+  "types": "api-types/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./api-types/index.ts",
+      "default": "./api-types/index.ts"
+    },
+    "./api-types": {
+      "types": "./api-types/index.ts",
+      "default": "./api-types/index.ts"
+    }
+  }
+}

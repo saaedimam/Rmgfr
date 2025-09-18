@@ -1,0 +1,5 @@
+packages:
+  - 'platform/web'
+  - 'platform/mobile'
+  - 'platform/api'
+  - 'packages/shared'
