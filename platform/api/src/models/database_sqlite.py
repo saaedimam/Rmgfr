@@ -1,5 +1,5 @@
 """
-Database models and configuration for Anti-Fraud Platform
+SQLite database models for development
 """
 
 import os
@@ -10,7 +10,7 @@ from sqlalchemy import String, Text, DateTime, JSON, DECIMAL, Boolean, Integer, 
 from sqlalchemy.sql import func
 import uuid
 
-# Database URL from environment
+# Use SQLite for development
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
     "sqlite+aiosqlite:///./antifraud.db"

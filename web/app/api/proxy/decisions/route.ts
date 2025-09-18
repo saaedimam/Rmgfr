@@ -6,7 +6,8 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const page = searchParams.get('page') || '1';
   const page_size = searchParams.get('page_size') || '20';
-  const r = await fetch(`${API_BASE}/v1/decisions?page=${page}&page_size=${page_size}`, {
+  const project_id = 'e5633458-8be7-4212-9eb5-39c48d3c5de7';
+  const r = await fetch(`${API_BASE}/v1/decisions?project_id=${project_id}&page=${page}&page_size=${page_size}`, {
     headers: { 'X-API-Key': PROJECT_API_KEY }
   });
   const data = await r.json();
