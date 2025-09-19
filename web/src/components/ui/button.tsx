@@ -1,6 +1,6 @@
 import React from "react"
 
-interface ButtonProps {
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode
   onClick?: () => void
   variant?: "primary" | "secondary" | "outline"
@@ -15,7 +15,8 @@ export function Button({
   variant = "primary", 
   size = "md", 
   className = "",
-  disabled = false
+  disabled = false,
+  ...props
 }: ButtonProps) {
   const baseClasses = "inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none"
   
@@ -36,6 +37,7 @@ export function Button({
       className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
       onClick={onClick}
       disabled={disabled}
+      {...props}
     >
       {children}
     </button>

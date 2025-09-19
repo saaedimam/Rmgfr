@@ -3,38 +3,51 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle } from "lucide-react";
 
-const stats = [
-  {
-    title: "Total Events",
-    value: "12,543",
-    change: "+12%",
-    trend: "up",
-    icon: TrendingUp,
-  },
-  {
-    title: "Fraud Detected",
-    value: "234",
-    change: "-8%",
-    trend: "down",
-    icon: AlertTriangle,
-  },
-  {
-    title: "Approved",
-    value: "11,892",
-    change: "+15%",
-    trend: "up",
-    icon: CheckCircle,
-  },
-  {
-    title: "Review Cases",
-    value: "417",
-    change: "+3%",
-    trend: "up",
-    icon: AlertTriangle,
-  },
-];
+interface StatsCardsProps {
+  totalEvents?: number
+  totalDecisions?: number
+  allowRate?: number
+  denyRate?: number
+  reviewRate?: number
+}
 
-export function StatsCards() {
+export function StatsCards({ 
+  totalEvents = 12543,
+  totalDecisions = 234,
+  allowRate = 15,
+  denyRate = 8,
+  reviewRate = 3
+}: StatsCardsProps = {}) {
+  const stats = [
+    {
+      title: "Total Events",
+      value: totalEvents.toLocaleString(),
+      change: "+12%",
+      trend: "up" as const,
+      icon: TrendingUp,
+    },
+    {
+      title: "Fraud Detected",
+      value: totalDecisions.toLocaleString(),
+      change: `-${denyRate}%`,
+      trend: "down" as const,
+      icon: AlertTriangle,
+    },
+    {
+      title: "Approved",
+      value: (totalEvents - totalDecisions).toLocaleString(),
+      change: `+${allowRate}%`,
+      trend: "up" as const,
+      icon: CheckCircle,
+    },
+    {
+      title: "Review Cases",
+      value: Math.floor(totalEvents * 0.03).toLocaleString(),
+      change: `+${reviewRate}%`,
+      trend: "up" as const,
+      icon: AlertTriangle,
+    },
+  ];
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {stats.map((stat) => {

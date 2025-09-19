@@ -295,8 +295,12 @@ export default function AnalyticsDashboard() {
                 <div className="flex items-center space-x-2">
                   <div className="w-32 bg-gray-200 rounded-full h-2">
                     <div 
-                      className="bg-blue-600 h-2 rounded-full" 
-                      style={{ width: `${eventType.percentage}%` }}
+                      className="bg-blue-600 h-2 rounded-full progress-bar" 
+                      style={{ width: `${Math.min(eventType.percentage, 100)}%` }}
+                      role="progressbar"
+                      aria-valuenow={eventType.percentage}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
                     ></div>
                   </div>
                   <span className="text-sm text-gray-600 w-12 text-right">

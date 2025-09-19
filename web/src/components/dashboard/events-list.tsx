@@ -3,7 +3,19 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-const recentEvents = [
+interface Event {
+  id: string
+  type: string
+  profileId: string
+  timestamp: string
+  status: string
+}
+
+interface EventsListProps {
+  events?: Event[]
+}
+
+const defaultEvents: Event[] = [
   {
     id: "evt_123",
     type: "checkout",
@@ -34,7 +46,7 @@ const recentEvents = [
   },
 ];
 
-export function EventsList() {
+export function EventsList({ events = defaultEvents }: EventsListProps) {
   return (
     <Card>
       <CardHeader>
@@ -42,7 +54,7 @@ export function EventsList() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {recentEvents.map((event) => (
+          {events.map((event) => (
             <div
               key={event.id}
               className="flex items-center justify-between p-3 border rounded-lg"

@@ -141,7 +141,7 @@ export default async function DecisionsPage() {
                     <th className="text-left py-3 px-4 font-medium text-gray-600">Created</th>
                   </tr>
                 </thead>
-                <tbody>
+        <tbody>
                   {data.decisions.map((decision) => (
                     <tr key={decision.id} className="border-b hover:bg-gray-50">
                       <td className="py-3 px-4 font-mono text-sm text-gray-900">
@@ -187,10 +187,10 @@ export default async function DecisionsPage() {
                       <td className="py-3 px-4 text-sm text-gray-600">
                         {new Date(decision.created_at).toLocaleString()}
                       </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            </tr>
+          ))}
+        </tbody>
+      </table>
             </div>
 
             {data.decisions.length === 0 && (

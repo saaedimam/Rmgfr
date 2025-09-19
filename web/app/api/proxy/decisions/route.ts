@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { API_BASE, PROJECT_API_KEY } from '../../../lib/serverEnv';
+import { API_BASE, PROJECT_API_KEY } from '../../../../lib/serverEnv';
 
 export async function GET(req: NextRequest) {
   if (!PROJECT_API_KEY) return NextResponse.json({ error: 'Server API key not set' }, { status: 500 });

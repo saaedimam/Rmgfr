@@ -3,7 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-const recentDecisions = [
+interface Decision {
+  id: string
+  eventId: string
+  decision: "allow" | "deny" | "review"
+  riskScore: number
+  timestamp: string
+  reasons: string[]
+}
+
+interface DecisionsListProps {
+  decisions?: Decision[]
+}
+
+const defaultDecisions: Decision[] = [
   {
     id: "dec_123",
     eventId: "evt_123",
@@ -38,7 +51,7 @@ const recentDecisions = [
   },
 ];
 
-export function DecisionsList() {
+export function DecisionsList({ decisions = defaultDecisions }: DecisionsListProps) {
   return (
     <Card>
       <CardHeader>
@@ -46,7 +59,7 @@ export function DecisionsList() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {recentDecisions.map((decision) => (
+          {decisions.map((decision) => (
             <div
               key={decision.id}
               className="flex items-center justify-between p-3 border rounded-lg"
